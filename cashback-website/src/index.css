@@ -1,0 +1,239 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+  /* ========================================
+     LIGHT THEME (Default)
+     ======================================== */
+  :root {
+    /* Liquid Glass Light Theme */
+    --background: 220 20% 97%;
+    --foreground: 225 25% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 225 25% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 225 25% 15%;
+
+    --primary: 230 65% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 270 50% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 15% 92%;
+    --muted-foreground: 220 15% 45%;
+
+    --accent: 175 55% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 88%;
+    --input: 220 15% 92%;
+    --ring: 230 65% 55%;
+
+    --radius: 1rem;
+  }
+
+  /* ========================================
+     DARK THEME - Applied when html has .dark class
+     ======================================== */
+  html.dark,
+  .dark {
+    --background: 225 25% 8%;
+    --foreground: 0 0% 95%;
+
+    --card: 225 20% 12%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 225 20% 12%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 230 65% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 270 50% 58%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 225 15% 18%;
+    --muted-foreground: 220 15% 65%;
+
+    --accent: 175 55% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 225 15% 25%;
+    --input: 225 15% 18%;
+    --ring: 230 65% 60%;
+  }
+
+  /* Apply foreground color to all elements */
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Native select styling */
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    cursor: pointer;
+  }
+
+  select option {
+    background-color: hsl(var(--card));
+    color: hsl(var(--foreground));
+    padding: 0.5rem;
+  }
+
+  html.dark select option {
+    background-color: hsl(225 20% 15%);
+    color: hsl(0 0% 95%);
+  }
+}
+
+/* ========================================
+   GLASS UTILITIES (Performance Optimized)
+   ======================================== */
+@layer utilities {
+  .glass {
+    background: hsl(var(--card) / 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  .glass-card {
+    background: hsl(var(--card) / 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid hsl(var(--border) / 0.4);
+  }
+
+  /* Floating Navbar */
+  .floating-navbar {
+    background: hsl(var(--card) / 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.3);
+    border-radius: 1rem;
+  }
+
+  html.dark .floating-navbar {
+    background: hsl(var(--card) / 0.75);
+  }
+
+  /* Floating Dropdown */
+  .floating-dropdown {
+    background: hsl(var(--card) / 0.95) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.4);
+    border-radius: 0.5rem;
+  }
+
+  html.dark .floating-dropdown {
+    background: hsl(var(--card) / 0.9) !important;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg,
+        hsl(var(--primary)) 0%,
+        hsl(260 55% 58%) 50%,
+        hsl(var(--accent)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg,
+        hsl(230 55% 52%) 0%,
+        hsl(var(--primary)) 50%,
+        hsl(250 55% 58%) 100%);
+  }
+
+  /* Glow effects */
+  .glow-primary {
+    box-shadow: 0 0 40px hsl(var(--primary) / 0.15);
+  }
+
+  .glow-hover:hover {
+    box-shadow: 0 0 50px hsl(var(--primary) / 0.2);
+  }
+
+  /* Button gradient */
+  .btn-gradient {
+    background: linear-gradient(135deg,
+        hsl(230 55% 52%) 0%,
+        hsl(260 50% 52%) 100%);
+  }
+
+  .btn-gradient:hover {
+    background: linear-gradient(135deg,
+        hsl(230 55% 58%) 0%,
+        hsl(260 50% 58%) 100%);
+  }
+}
+
+/* Ambient background glow */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 20%, hsl(230 65% 60% / 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, hsl(270 50% 55% / 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, hsl(175 55% 45% / 0.03) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+html.dark body::before {
+  background:
+    radial-gradient(ellipse at 20% 20%, hsl(230 65% 60% / 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, hsl(270 50% 58% / 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, hsl(175 55% 45% / 0.05) 0%, transparent 70%);
+}
+
+/* Background gradients */
+html:not(.dark) body {
+  background: linear-gradient(180deg,
+      hsl(220 20% 98%) 0%,
+      hsl(220 20% 96%) 50%,
+      hsl(220 20% 97%) 100%);
+}
+
+html.dark body {
+  background: linear-gradient(180deg,
+      hsl(225 25% 6%) 0%,
+      hsl(225 25% 10%) 50%,
+      hsl(225 25% 8%) 100%);
+}

@@ -1,0 +1,412 @@
+Got you — I’ll give you a clean, copy-paste friendly **.txt-style system + database design document**. No extra chatter, no fancy formatting tricks — just something you can drop straight into a file and hand over.
+
+You can paste everything below into:
+`backcash_system_design.txt`
+
+---
+
+BACKCASH — SYSTEM DESIGN & DATABASE DESIGN DOCUMENT
+Stack: React + FastAPI + Supabase + Render + Vercel
+
+---
+
+1. OVERVIEW
+
+---
+
+BackCash is a community-driven cashback knowledge platform where users submit merchant cashback behavior per credit card. Users can comment, vote, and verify entries. System must support multiple cards, merchant aliases, voting, comments, reputation, and Google authentication.
+
+Tech Stack:
+
+* Frontend: React (Vercel)
+* Backend: FastAPI (Render)
+* Database: Supabase Postgres
+* Auth: Supabase Google OAuth
+* Storage: Supabase Storage (optional later)
+
+---
+
+2. HIGH LEVEL ARCHITECTURE
+
+---
+
+React Frontend (Vercel)
+|
+| HTTPS + JWT
+v
+FastAPI Backend (Render)
+|
+| Supabase client
+v
+Supabase
+
+* Postgres DB
+* Supabase Auth
+* Row Level Security
+* Storage (optional)
+
+Auth Flow:
+
+* User signs in with Google via Supabase Auth
+* Frontend receives JWT
+* Frontend sends JWT to FastAPI
+* FastAPI verifies JWT and extracts user_id
+
+---
+
+3. AUTH DESIGN
+
+---
+
+Use Supabase Auth only. Do not build custom auth.
+
+Supabase table:
+auth.users (built-in)
+
+Create extension table:
+profiles
+
+profiles table stores:
+
+* id (same as auth.users.id)
+* display_name
+* avatar_url
+* role
+* reputation_score
+
+Profile row is auto-created on first login using trigger.
+
+---
+
+4. DATABASE TABLES
+
+---
+
+4.1 PROFILES
+
+profiles
+
+* id uuid primary key references auth.users(id)
+* email text
+* display_name text
+* avatar_url text
+* role text default 'user'
+* reputation_score int default 0
+* created_at timestamp
+
+---
+
+4.2 CARDS
+
+cards
+
+* id uuid pk
+* slug text unique
+* name text
+* issuer text
+* network text
+* description text
+* max_cashback_rate numeric
+* image_url text
+* active boolean
+* created_at timestamp
+
+Each supported credit card has one row.
+
+---
+
+4.3 MERCHANTS (CANONICAL)
+
+merchants
+
+* id uuid pk
+* canonical_name text
+* category text
+* default_mcc text
+* website text
+* created_at timestamp
+
+One row per real merchant identity.
+
+---
+
+4.4 MERCHANT_ALIASES
+
+merchant_aliases
+
+* id uuid pk
+* merchant_id fk → merchants.id
+* alias_text text
+* created_at timestamp
+
+Stores statement name variations.
+
+Example:
+merchant = Agoda
+aliases:
+
+* PPSL* Agoda Company PTE Gurgaon HAR
+* Agoda Company PTE LTD Mumbai IN
+
+---
+
+4.5 CASHBACK_ENTRIES (CORE TABLE)
+
+cashback_entries
+
+* id uuid pk
+* card_id fk → cards.id
+* merchant_id fk → merchants.id
+* statement_name text
+* reported_cashback_rate numeric
+* mcc text
+* contributor_id fk → profiles.id
+* notes text
+* status text (pending/verified/disputed/rejected)
+* transaction_date date
+* last_verified_at timestamp
+* upvote_count int default 0
+* downvote_count int default 0
+* created_at timestamp
+* updated_at timestamp
+
+Each row = one community submission.
+
+---
+
+4.6 ENTRY_VOTES
+
+entry_votes
+
+* entry_id fk → cashback_entries.id
+* user_id fk → profiles.id
+* vote_type text (up/down)
+* created_at timestamp
+
+Primary key: (entry_id, user_id)
+
+Ensures one vote per user per entry.
+
+---
+
+4.7 ENTRY_COMMENTS
+
+entry_comments
+
+* id uuid pk
+* entry_id fk → cashback_entries.id
+* user_id fk → profiles.id
+* content text
+* is_deleted boolean
+* created_at timestamp
+
+---
+
+4.8 REPUTATION_EVENTS (OPTIONAL BUT RECOMMENDED)
+
+reputation_events
+
+* id uuid pk
+* user_id fk → profiles.id
+* event_type text
+* points int
+* ref_id uuid
+* created_at timestamp
+
+Tracks reputation changes.
+
+---
+
+5. INDEXES
+
+---
+
+Add indexes:
+
+* merchants canonical_name trigram index
+* merchant_aliases alias_text trigram index
+* cashback_entries card_id
+* cashback_entries merchant_id
+* cashback_entries status
+* entry_comments entry_id
+* entry_votes entry_id
+
+Enable pg_trgm extension in Supabase.
+
+---
+
+6. MERCHANT MATCHING LOGIC
+
+---
+
+When new entry submitted:
+
+Step 1: Search merchant_aliases where alias_text ILIKE statement_name
+Step 2: If match found → use merchant_id
+Step 3: If not found:
+create merchant row
+create alias row
+Step 4: Insert cashback_entry
+
+Prevents merchant duplication.
+
+---
+
+7. VOTING LOGIC
+
+---
+
+When vote submitted:
+
+If vote exists:
+update vote_type
+Else:
+insert vote
+
+Use DB trigger to update:
+
+* upvote_count
+* downvote_count
+
+Do not calculate counts at read time.
+
+---
+
+8. ENTRY STATUS RULES
+
+---
+
+Initial status = pending
+
+Auto-verify rule:
+
+* upvotes >= 5
+* downvotes = 0
+
+Moderator can override status.
+
+---
+
+9. ROW LEVEL SECURITY (RLS)
+
+---
+
+Enable RLS on:
+
+* cashback_entries
+* entry_comments
+* entry_votes
+
+Policies:
+
+Insert entry:
+contributor_id = auth.uid()
+
+Edit entry:
+contributor_id = auth.uid()
+
+Insert vote:
+user_id = auth.uid()
+
+Insert comment:
+user_id = auth.uid()
+
+---
+
+10. FASTAPI STRUCTURE
+
+---
+
+app/
+routers/
+cards.py
+entries.py
+comments.py
+votes.py
+services/
+merchant_matcher.py
+reputation.py
+deps/
+auth.py
+
+Auth dependency verifies Supabase JWT and returns user_id.
+
+---
+
+11. API ENDPOINTS
+
+---
+
+GET /cards
+GET /cards/{id}/entries
+
+POST /entries
+GET /entries/{id}
+
+POST /entries/{id}/vote
+POST /entries/{id}/comment
+
+GET /merchants/search?q=
+
+---
+
+12. ENTRY DETAIL VIEW (DB VIEW)
+
+---
+
+Create SQL view joining:
+
+* cashback_entries
+* merchants
+* cards
+* profiles
+
+Used for entry detail page to avoid multiple joins per request.
+
+---
+
+13. FUTURE EXTENSIONS
+
+---
+
+Easy to add later:
+
+* receipt image uploads
+* MCC analytics
+* merchant trust score
+* contributor badges
+* leaderboard
+* fraud detection
+* edit history table
+* dispute workflow
+
+---
+
+14. DESIGN PRINCIPLES USED
+
+---
+
+* Normalize merchant identity
+* Separate aliases from merchants
+* Separate users from auth
+* Prevent duplicate votes
+* Store vote counts denormalized
+* Use UUID everywhere
+* Never use email as foreign key
+* Use Supabase Auth, not custom auth
+
+---
+
+End of document.
+
+---
+
+If you want, next I can also generate:
+
+* Supabase SQL migration file
+* FastAPI starter repo structure
+* RLS policy scripts
+* Prisma schema version
+* ER diagram
+
+Just say the word and we’ll make your antigravity teammate gravity-compliant 😄
