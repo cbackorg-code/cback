@@ -1,7 +1,8 @@
-from dotenv import load_dotenv
-import os
-
-load_dotenv() # Load env vars BEFORE importing app modules that rely on them
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass # Cloudflare Workers has no dotenv, ignores it
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
