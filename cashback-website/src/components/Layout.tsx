@@ -10,10 +10,6 @@ interface LayoutProps {
     onLogoClick?: () => void;
     onProfileClick?: () => void;
     user: { name: string; email: string; avatar_url?: string; reputation?: number } | null;
-    onLogin: (user: { name: string; email: string; avatar_url?: string; reputation?: number }) => void;
-    onLogout: () => void;
-    onOpenLogin: () => void;
-    onCloseLogin: () => void;
     onCloseLogin: () => void;
     isLoginOpen: boolean;
     onDocsClick: () => void;
@@ -24,17 +20,13 @@ export default function Layout({
     onLogoClick,
     onProfileClick,
     user,
-    onLogin,
     onLogout,
     onOpenLogin,
     onCloseLogin,
     isLoginOpen,
     onDocsClick
 }: LayoutProps) {
-    const handleLoginSuccess = (user: { name: string; email: string; avatar_url?: string; reputation?: number }) => {
-        onLogin(user);
-        onCloseLogin();
-    };
+
     return (
         <div className="flex flex-col min-h-screen text-foreground">
             {/* Floating Navbar */}
