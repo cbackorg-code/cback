@@ -13,6 +13,8 @@ interface LayoutProps {
     onCloseLogin: () => void;
     isLoginOpen: boolean;
     onDocsClick: () => void;
+    onLogout: () => void;
+    onOpenLogin: () => void;
 }
 
 export default function Layout({
