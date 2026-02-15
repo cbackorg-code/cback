@@ -1,5 +1,5 @@
 name = "cback-api"
-main = "backend/main.py"
+main = "main.py"
 compatibility_date = "2024-02-15"
 compatibility_flags = ["python_workers"]
 
