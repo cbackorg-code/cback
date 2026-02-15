@@ -1,0 +1,9 @@
+fastapi
+sqlmodel
+pg8000
+python-multipart
+requests
+pyjwt
+python-dotenv
+# uvicorn is not needed (Workers is the server)
+# psycopg2-binary is not supported (C extensions)
