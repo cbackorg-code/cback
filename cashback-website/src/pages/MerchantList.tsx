@@ -126,7 +126,8 @@ export default function MerchantList({ cardId, onBack, onMerchantSelect, isAuthe
 
         } catch (error) {
             console.error("Error fetching entries:", error);
-            toast.error("Failed to load entries");
+            // toast.error("Failed to load entries"); // Removed toast spam
+            setHasMore(false); // Stop infinite scroll on error
         } finally {
             setIsLoading(false);
         }

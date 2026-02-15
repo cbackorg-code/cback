@@ -39,13 +39,18 @@ def read_entries(
     
     # Joins for searching
     if search:
-        # Join with Merchant and Alias to search by names
-        query = query.join(Merchant).outerjoin(MerchantAlias)
-        query = query.where(
+        # Use a subquery to find matching IDs to avoid duplicates from joins
+        # This fixes the "SELECT DISTINCT + ORDER BY" error in Postgres
+        sub_query = select(CashbackEntry.id).join(Merchant).outerjoin(MerchantAlias).where(
             (col(Merchant.canonical_name).ilike(f"%{search}%")) |
             (col(CashbackEntry.statement_name).ilike(f"%{search}%")) |
             (col(MerchantAlias.alias_text).ilike(f"%{search}%"))
-        ).distinct()
+        )
+        query = query.where(CashbackEntry.id.in_(sub_query))
+        
+        # Ensure Merchant is joined for sorting if needed, but safe 1:1 join
+        if sort == "merchant":
+             query = query.join(Merchant)
     else:
         # If no search, we still need to join Merchant for sorting by merchant name
         if sort == "merchant":
@@ -76,6 +81,7 @@ def read_entries(
     
 
 
+    
     # Fetch user votes if logged in
     user_votes_map = {}
     if profile and entries:

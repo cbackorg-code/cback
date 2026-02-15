@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-origins_str = os.environ.get("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000")
+origins_str = os.environ.get("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000,https://cback.netlify.app")
 origins = origins_str.split(",")
 
 # Rate Limiting Setup
