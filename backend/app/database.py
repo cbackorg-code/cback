@@ -5,9 +5,8 @@ from sqlmodel import SQLModel, create_engine, Session
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./backend_app.db")
 
 # Cloudflare Workers Python requires pure-python driver (pg8000)
-# If the user provides a standard postgresql:// URL, we force it to use pg8000
-if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+pg8000://")
+# But for Render/Docker, we want standard psycopg2 (which handles postgresql://)
+# So we removed the forcing of pg8000 here.
 
 # For SQLite, we need connect_args={"check_same_thread": False}
 connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
