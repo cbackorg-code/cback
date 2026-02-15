@@ -1,0 +1,8 @@
+name = "cback-api"
+main = "backend/main.py"
+compatibility_date = "2024-02-15"
+compatibility_flags = ["python_workers"]
+
+[vars]
+# We will set DATABASE_URL via `wrangler secret put DATABASE_URL`
+# It should look like: postgresql+pg8000://user:password@host:5432/postgres

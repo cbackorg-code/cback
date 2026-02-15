@@ -4,6 +4,11 @@ from sqlmodel import SQLModel, create_engine, Session
 # Use DATABASE_URL env var if available, otherwise default to local sqlite
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./backend_app.db")
 
+# Cloudflare Workers Python requires pure-python driver (pg8000)
+# If the user provides a standard postgresql:// URL, we force it to use pg8000
+if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+pg8000://")
+
 # For SQLite, we need connect_args={"check_same_thread": False}
 connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
 

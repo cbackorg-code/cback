@@ -1,52 +1,63 @@
-# Deployment Guide: BackCash
+# Deployment Guide: Cloudflare Pages + Workers + Supabase
 
-We will deploy the **Frontend** to **Cloudflare Pages** (Fast, Free, Custom Subdomains) and the **Backend** to **Render** (Easy Python Support, Free Tier).
+This configuration uses:
+*   **Frontend**: Cloudflare Pages
+*   **Backend**: Cloudflare Workers (Python)
+*   **Database**: Supabase (PostgreSQL)
 
-## Part 1: Backend (Render)
+## Part 1: Database (Supabase)
 
-1.  **Sign Up/Login**: Go to [dashboard.render.com](https://dashboard.render.com/).
-2.  **New Web Service**:
-    *   Click **New +** -> **Web Service**.
-    *   Connect your GitHub repository (`sunil-7777/cback`).
-3.  **Configuration**:
-    *   **Name**: `cback-api` (or similar short name).
-    *   **Root Directory**: `backend`
-    *   **Runtime**: `Python 3`
-    *   **Build Command**: `pip install -r requirements.txt`
-    *   **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-    *   **Instance Type**: Free
+1.  Go to your [Supabase Dashboard](https://supabase.com/dashboard).
+2.  Go to **Project Settings** -> **Database**.
+3.  Under **Connection String**, select **URI**.
+    *   Copy the URI (e.g., `postgresql://postgres.[ref]:[password]@aws-0-us-east-1.pooler.supabase.com:6543/postgres`).
+    *   **Important**: Use port `5432` (Direct) or `6543` (Pooler). For Workers, the **Session Pooler (port 5432 or 6543)** is recommended if available, but Direct works too for low traffic.
+    *   **Replace `[password]`** with your actual database password.
+
+## Part 2: Backend (Cloudflare Workers)
+
+1.  **Install Wrangler**: `npm install -g wrangler`
+2.  **Login**: `wrangler login`
+3.  **Set Database Secret**:
+    ```bash
+    # Run this in your project root
+    npx wrangler secret put DATABASE_URL
+    ```
+    *   Paste your Supabase Connection URI when prompted.
+    *   **Note**: Our code automatically converts `postgresql://` to `postgresql+pg8000://` to work with Python Workers.
+4.  **Deploy**:
+    ```bash
+    npx wrangler deploy
+    ```
+    *   Copy the **Worker URL** (e.g., `https://cback-api.your-subdomain.workers.dev`).
+
+## Part 3: Frontend (Cloudflare Pages)
+
+1.  **Cloudflare Dashboard** -> **Workers & Pages** -> **Create Application** -> **Pages** -> **Connect to Git**.
+2.  Select Repo `sunil-7777/cback`.
+3.  **Settings**:
+    *   **Preset**: Vite
+    *   **Output Dir**: `dist`
+    *   **Root Dir**: `cashback-website`
 4.  **Environment Variables**:
-    *   Add `Key`: `DATABASE_URL` | `Value`: `sqlite:///./backend_app.db`
-    *   Add `Key`: `SUPABASE_URL` | `Value`: (Your Supabase URL)
-    *   Add `Key`: `SUPABASE_KEY` | `Value`: (Your Supabase Anon Key)
-5.  **Deploy**: Click **Create Web Service**.
-    *   **Note:** Your URL will look like `https://cback-api.onrender.com`. Copy this URL.
-
-## Part 2: Frontend (Cloudflare Pages)
-
-1.  **Sign Up/Login**: Go to [dash.cloudflare.com](https://dash.cloudflare.com/).
-2.  **Create Application**:
-    *   Go to **Workers & Pages** -> **Create Application** -> **Pages** -> **Connect to Git**.
-    *   Select your repository (`sunil-7777/cback`).
-3.  **Build Configuration**:
-    *   **Project Name**: `cback` (This determines your subdomain: `cback.pages.dev`).
-    *   **Framework Preset**: **Vite**
-    *   **Build Command**: `npm run build`
-    *   **Build Output Directory**: `dist`
-    *   **Root Directory**: `cashback-website` (Very Important!)
-4.  **Environment Variables**:
+    *   `VITE_API_BASE_URL`: (Paste your Worker URL from Part 2)
     *   `VITE_SUPABASE_URL`: (Your Supabase URL)
     *   `VITE_SUPABASE_ANON_KEY`: (Your Supabase Anon Key)
-    *   `VITE_API_BASE_URL`: (Paste your Render Backend URL here, e.g., `https://cback-api.onrender.com`)
-5.  **Deploy**: Click **Save and Deploy**.
+5.  **Deploy**.
 
-## Part 3: Minimal Subdomains
+## Part 4: Data Migration (Important!)
 
-*   **Frontend**: When creating the Cloudflare Pages project, name it `cback` or `bcash` to get `cback.pages.dev`.
-*   **Backend**: When creating the Render service, name it `cback-api` to get `cback-api.onrender.com`.
+Since your local dev used SQLite (`backend_app.db`) and Supabase is empty (for data), you need to create the tables in Supabase.
 
-## Note on Database (SQLite)
-Since we are using SQLite on Render's free tier, the database file is **ephemeral**. This means:
-*   The database will work fine for testing.
-*   **Warning**: If the Render service restarts or redeploys, **all data (users, entries) will be wiped and reset to empty**.
-*   **fix**: To make it permanent later, switch to using Supabase PostgreSQL (change `DATABASE_URL` env var).
+**Option A: Developer Machine Migration (Simplest)**
+1.  In your `backend/.env` file, temporarily change `DATABASE_URL` to your Supabase Connection String.
+2.  Run the backend locally once:
+    ```bash
+    cd backend
+    uvicorn main:app
+    ```
+    *   `SQLModel` will automatically create the tables (`create_db_and_tables` in `main.py`).
+3.  (Optional) If you want to transfer your *local data* (merchants/cards) to Supabase, you'll need to write a script to copy from SQLite to Postgres, or just re-add them via the UI/API.
+
+**Option B: SQL Editor**
+1.  You can also inspect `models.py` and write the `CREATE TABLE` statements in the Supabase SQL Editor manually.
