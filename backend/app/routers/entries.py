@@ -4,7 +4,7 @@ from typing import List, Optional
 import uuid
 
 from app.database import get_session
-from app.database import get_session
+
 from app.models import CashbackEntry, Merchant, Card, Profile, MerchantAlias, EntryVote, RateSuggestion, RateSuggestionVote, VoteType, EntryStatus, SuggestionStatus, ist_now
 from app.auth import get_optional_user, get_current_user, get_current_profile, get_optional_profile
 from app.limiter import limiter

@@ -4,6 +4,7 @@ try:
 except ImportError:
     pass # Cloudflare Workers has no dotenv, ignores it
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import create_db_and_tables
