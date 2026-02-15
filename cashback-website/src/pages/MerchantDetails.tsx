@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { ArrowLeft, Clock, MessageSquare, Send, CheckCircle, User, Pencil, ThumbsUp, ThumbsDown, Percent } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -18,12 +17,14 @@ import {
     DialogTitle,
 } from "../components/ui/dialog"
 import { Label } from "../components/ui/label"
+import { UserAvatar } from "../components/UserAvatar";
 
 interface MerchantDetailsProps {
     merchantId: string;
     onBack: () => void;
     isAuthenticated: boolean;
     onOpenLogin: () => void;
+    onUserClick?: (userId: string) => void;
 }
 
 interface Comment {
@@ -34,6 +35,7 @@ interface Comment {
         id: string;
         display_name: string;
         reputation_score?: number;
+        avatar_url?: string;
     };
 }
 
@@ -51,7 +53,7 @@ interface RateSuggestion {
     is_current_user?: boolean;
 }
 
-export default function MerchantDetails({ merchantId, onBack, isAuthenticated, onOpenLogin }: MerchantDetailsProps) {
+export default function MerchantDetails({ merchantId, onBack, isAuthenticated, onOpenLogin, onUserClick }: MerchantDetailsProps) {
     const [newComment, setNewComment] = useState("");
     const [entry, setEntry] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -81,14 +83,6 @@ export default function MerchantDetails({ merchantId, onBack, isAuthenticated, o
     }, [entry]);
 
 
-    // Helper function to get user tier based on reputation
-    const getUserTier = (reputation: number = 0): { name: string; color: string; bgColor: string } => {
-        if (reputation >= 1000) return { name: "Platinum", color: "text-cyan-400", bgColor: "bg-cyan-400/10 border-cyan-400/30" };
-        if (reputation >= 500) return { name: "Gold", color: "text-yellow-400", bgColor: "bg-yellow-400/10 border-yellow-400/30" };
-        if (reputation >= 100) return { name: "Silver", color: "text-slate-300", bgColor: "bg-slate-300/10 border-slate-300/30" };
-        return { name: "Bronze", color: "text-amber-600", bgColor: "bg-amber-600/10 border-amber-600/30" };
-    };
-
     const hasPendingSuggestion = useMemo(() => {
         return suggestions.some(s => s.is_current_user);
     }, [suggestions]);
@@ -107,6 +101,7 @@ export default function MerchantDetails({ merchantId, onBack, isAuthenticated, o
                     statementName: entryData.statement_name,
                     cashbackRate: `${entryData.reported_cashback_rate}% `,
                     contributor: entryData.contributor?.display_name || "Anonymous",
+                    contributorId: entryData.contributor?.id,
                     comments: entryData.notes,
                     lastVerified: entryData.last_verified_at,
                     status: entryData.status,
@@ -316,7 +311,7 @@ export default function MerchantDetails({ merchantId, onBack, isAuthenticated, o
     const style = getCashbackStyle(entry.cashbackRate);
 
     return (
-        <div className="space-y-6 pb-24 max-w-4xl mx-auto">
+        <div className="space-y-6 pb-24">
             {/* Header */}
             <div className="flex items-start gap-4">
                 <Button
@@ -393,7 +388,13 @@ export default function MerchantDetails({ merchantId, onBack, isAuthenticated, o
                         <Card className="glass-card overflow-hidden col-span-2 sm:col-span-1">
                             <CardContent className="p-4 flex flex-col items-center text-center gap-2">
                                 <span className="text-xs text-muted-foreground uppercase tracking-wider">Contributor</span>
-                                <div className="flex items-center gap-2 text-foreground font-medium truncate max-w-full">
+                                <div
+                                    className={cn(
+                                        "flex items-center gap-2 text-foreground font-medium truncate max-w-full",
+                                        entry.contributorId && "cursor-pointer hover:underline hover:text-primary transition-colors"
+                                    )}
+                                    onClick={() => entry.contributorId && onUserClick?.(entry.contributorId)}
+                                >
                                     <User className="h-4 w-4 text-muted-foreground" />
                                     {entry.contributor || "Anonymous"}
                                 </div>
@@ -483,7 +484,7 @@ export default function MerchantDetails({ merchantId, onBack, isAuthenticated, o
                                     <MessageSquare className="h-5 w-5 text-primary" />
                                     Original Note
                                 </h3>
-                                <p className="text-muted-foreground leading-relaxed">{entry.comments}</p>
+                                <p className="text-foreground/90 leading-relaxed">{entry.comments}</p>
                             </CardContent>
                         </Card>
                     )}
@@ -514,31 +515,34 @@ export default function MerchantDetails({ merchantId, onBack, isAuthenticated, o
                                     const createdDate = new Date(comment.created_at);
                                     const displayName = comment.author?.display_name || "Anonymous";
                                     const reputation = comment.author?.reputation_score || 0;
-                                    const tier = getUserTier(reputation);
+                                    const avatarUrl = comment.author?.avatar_url;
+
                                     return (
                                         <div key={comment.id} className="flex gap-3 group animate-in slide-in-from-bottom-2 duration-300">
-                                            <div className={cn(
-                                                "w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-bold shadow-lg bg-primary"
-                                            )}>
-                                                {displayName.charAt(0).toUpperCase()}
+                                            <div
+                                                className={cn("cursor-pointer transition-opacity hover:opacity-80 active:scale-95", !comment.author?.id && "pointer-events-none")}
+                                                onClick={() => comment.author?.id && onUserClick?.(comment.author.id)}
+                                            >
+                                                <UserAvatar
+                                                    user={{ name: displayName, avatar_url: avatarUrl, reputation }}
+                                                    size="md"
+                                                />
                                             </div>
                                             <div className="flex-1 space-y-1">
                                                 <div className="flex items-center justify-between gap-2">
                                                     <div className="flex items-center gap-2 flex-wrap">
-                                                        <span className="text-sm font-medium text-foreground">{displayName}</span>
-                                                        <span className={cn(
-                                                            "text-[10px] px-1.5 py-0.5 rounded border font-semibold uppercase tracking-wide",
-                                                            tier.color,
-                                                            tier.bgColor
-                                                        )}>
-                                                            {tier.name}
+                                                        <span
+                                                            className={cn("text-sm font-medium text-foreground hover:underline cursor-pointer", !comment.author?.id && "pointer-events-none hover:no-underline")}
+                                                            onClick={() => comment.author?.id && onUserClick?.(comment.author.id)}
+                                                        >
+                                                            {displayName}
                                                         </span>
                                                     </div>
                                                     <span className="text-[10px] text-muted-foreground whitespace-nowrap">
                                                         {createdDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })} • {createdDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
                                                 </div>
-                                                <p className="text-sm text-muted-foreground/90 bg-muted/20 p-2.5 rounded-r-lg rounded-bl-lg">
+                                                <p className="text-sm text-foreground bg-muted/30 p-3 rounded-r-lg rounded-bl-lg shadow-sm">
                                                     {comment.content}
                                                 </p>
                                             </div>

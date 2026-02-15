@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { LogIn, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+
 import {
     Dialog,
     DialogContent,
@@ -12,52 +12,27 @@ import {
 import { supabase } from "../lib/supabase";
 import { toast } from "sonner";
 
+import { Checkbox } from "./ui/checkbox";
+
 interface LoginDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onLogin: (user: { name: string; email: string; picture?: string }) => void;
+    onDocsClick: () => void;
 }
 
-export function LoginDialog({ open, onOpenChange, onLogin }: LoginDialogProps) {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+export function LoginDialog({ open, onOpenChange, onLogin, onDocsClick }: LoginDialogProps) {
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-    const [isSignUp, setIsSignUp] = useState(false);
-
-    const handleAuth = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-
-        try {
-            if (isSignUp) {
-                const { error } = await supabase.auth.signUp({
-                    email,
-                    password,
-                });
-                if (error) throw error;
-                toast.success('Check your email for the login link!');
-            } else {
-                const { error } = await supabase.auth.signInWithPassword({
-                    email,
-                    password,
-                });
-                if (error) throw error;
-                toast.success('Successfully logged in!');
-                onOpenChange(false);
-            }
-        } catch (error: any) {
-            toast.error(error.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const [isTermsAccepted, setIsTermsAccepted] = useState(false);
 
     const handleGoogleLogin = async () => {
         setIsGoogleLoading(true);
         try {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
+                options: {
+                    redirectTo: window.location.origin,
+                }
             });
             if (error) throw error;
             // Supabase will redirect, so no need to close dialog manually here immediately
@@ -76,18 +51,42 @@ export function LoginDialog({ open, onOpenChange, onLogin }: LoginDialogProps) {
                             <LogIn className="h-6 w-6 text-white" />
                         </div>
                         <DialogTitle className="text-2xl font-bold tracking-tight">
-                            {isSignUp ? "Create Account" : "Welcome Back"}
+                            Welcome Back
                         </DialogTitle>
                         <DialogDescription className="text-sm text-muted-foreground">
-                            {isSignUp ? "Sign up to start contributing" : "Sign in to access your account"}
+                            Sign in to access your account
                         </DialogDescription>
                     </DialogHeader>
+
+                    <div className="flex items-start gap-2 px-1">
+                        <Checkbox
+                            id="terms"
+                            checked={isTermsAccepted}
+                            onCheckedChange={(checked) => setIsTermsAccepted(checked as boolean)}
+                            className="mt-1"
+                        />
+                        <div className="grid gap-1.5 leading-none">
+                            <label
+                                htmlFor="terms"
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-muted-foreground"
+                            >
+                                I agree to the <span className="text-primary hover:underline cursor-pointer" onClick={(e) => {
+                                    e.preventDefault();
+                                    onOpenChange(false); // Close dialog
+                                    onDocsClick(); // Navigate to docs
+                                }}>Terms & Guidelines</span>
+                            </label>
+                            <p className="text-xs text-muted-foreground/80">
+                                You confirm that you understand the community guidelines.
+                            </p>
+                        </div>
+                    </div>
 
                     <Button
                         onClick={handleGoogleLogin}
                         variant="outline"
-                        className="w-full h-11 rounded-xl gap-3 bg-white hover:bg-white/90 text-gray-900 border-gray-200 shadow-sm relative overflow-hidden group transition-all"
-                        disabled={isGoogleLoading || isLoading}
+                        className="w-full h-11 rounded-xl gap-3 bg-white hover:bg-white/90 text-gray-900 border-gray-200 shadow-sm relative overflow-hidden group transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={isGoogleLoading || !isTermsAccepted}
                     >
                         {isGoogleLoading ? (
                             <Loader2 className="h-4 w-4 animate-spin text-gray-600" />
@@ -119,97 +118,22 @@ export function LoginDialog({ open, onOpenChange, onLogin }: LoginDialogProps) {
                             <span className="w-full border-t border-white/10" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
-                        </div>
-                    </div>
-
-                    <form onSubmit={handleAuth} className="space-y-4">
-                        <div className="space-y-2">
-                            <label htmlFor="email" className="text-sm font-medium leading-none text-foreground/80">
-                                Email
-                            </label>
-                            <Input
-                                id="email"
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Enter email"
-                                required
-                                className="bg-background/40 border-white/10 focus-visible:ring-primary/30 focus-visible:border-primary/50 h-11 rounded-xl"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label htmlFor="password" className="text-sm font-medium leading-none text-foreground/80">
-                                Password
-                            </label>
-                            <Input
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Enter password"
-                                required
-                                className="bg-background/40 border-white/10 focus-visible:ring-primary/30 focus-visible:border-primary/50 h-11 rounded-xl"
-                            />
-                        </div>
-                        <Button
-                            type="submit"
-                            className="w-full h-11 rounded-xl btn-gradient text-white font-medium shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
-                            disabled={isLoading || isGoogleLoading}
-                        >
-                            {isLoading ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    {isSignUp ? "Creating Account..." : "Signing In..."}
-                                </>
-                            ) : (
-                                isSignUp ? "Create Account" : "Sign In"
-                            )}
-                        </Button>
-                    </form>
-
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-white/10" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
                             <span className="bg-background px-2 text-muted-foreground">Or Use Demo Account</span>
                         </div>
                     </div>
 
                     <Button
                         onClick={() => {
-                            // Auto-fill and submit demo credentials - logic needs to actually sign in or just mock it? 
-                            // Creating a real "demo@example.com" on Supabase is hassle. 
-                            // Let's just mock the login success callback if they click demo, 
-                            // BUT warn them it's local-only state if we do that.
-                            // Better: actually sign them in anonymously or with a hardcoded real account if it exists?
-                            // Safest: Just mock the onLogin callback for now so they can test UI.
-
-                            // Checking if we can just bypass auth for demo...
-                            // Actually, let's just create a real signInWithPassword call with a known test account if we had one.
-                            // But since we don't know if they created one, let's revert to the "Mock" behavior for the Demo button ONLY.
                             onLogin({ name: "Demo User", email: "demo@example.com" });
                             onOpenChange(false);
                             toast.success("Signed in as Demo User (Local Mode)");
                         }}
                         variant="ghost"
-                        className="w-full h-11 rounded-xl border border-dashed border-white/20 hover:bg-white/5"
+                        className="w-full h-11 rounded-xl border border-dashed border-white/20 hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={!isTermsAccepted}
                     >
                         Skip & Continue as Guest (Demo)
                     </Button>
-
-                    <div className="text-center text-sm">
-                        <button
-                            type="button"
-                            className="text-primary hover:underline hover:text-primary/80 transition-colors"
-                            onClick={() => setIsSignUp(!isSignUp)}
-                        >
-                            {isSignUp
-                                ? 'Already have an account? Sign In'
-                                : "Don't have an account? Sign Up"}
-                        </button>
-                    </div>
                 </div>
             </DialogContent>
         </Dialog>

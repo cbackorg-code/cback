@@ -52,7 +52,7 @@ export default function Home({ onCardSelect }: CardSelectorProps) {
                     <span className="text-xs sm:text-sm font-medium text-accent">Smart Cashback Intelligence</span>
                 </div>
                 <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight pb-1 px-2">
-                    Track Your Cashback Like a Pro
+                    Check Your Cashback Like a Pro
                 </h1>
                 <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
                     Discover which merchants give you the best cashback rates. Community-verified data from real users.

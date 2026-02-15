@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException, Request
 from sqlmodel import Session, select, col, func
 from typing import List, Optional
 import uuid
 
 from app.database import get_session
 from app.database import get_session
-from app.models import CashbackEntry, Merchant, Card, Profile, MerchantAlias, EntryVote, RateSuggestion, RateSuggestionVote, VoteType, EntryStatus, SuggestionStatus
+from app.models import CashbackEntry, Merchant, Card, Profile, MerchantAlias, EntryVote, RateSuggestion, RateSuggestionVote, VoteType, EntryStatus, SuggestionStatus, ist_now
 from app.auth import get_optional_user, get_current_user, get_current_profile, get_optional_profile
+from app.limiter import limiter
 
 router = APIRouter(
     prefix="/entries",
@@ -15,7 +16,9 @@ router = APIRouter(
 
 # Reading entries (The main feed)
 @router.get("/", response_model=None)
+@limiter.limit("60/minute") # Global read limit
 def read_entries(
+    request: Request,
     card_id: Optional[uuid.UUID] = None,
     merchant_id: Optional[uuid.UUID] = None,
     search: Optional[str] = None,
@@ -195,7 +198,9 @@ def read_entry(
 
 # Creating an entry (User Contribution)
 @router.post("/", response_model=None)
+@limiter.limit("5/minute")
 def create_entry(
+    request: Request,
     entry_data: dict, 
     session: Session = Depends(get_session),
     profile: Profile = Depends(get_current_profile) # Uses the new Auth helper
@@ -247,6 +252,17 @@ def create_entry(
         # In a real system, you might want a human review queue or fuzzy match.
         merchant_name = entry_data.get("name") or statement_name
         
+        # Validation: Junk Prevention
+        import re
+        if len(merchant_name) < 3:
+             raise HTTPException(status_code=400, detail="Merchant name must be at least 3 characters")
+        if len(merchant_name) > 100:
+             raise HTTPException(status_code=400, detail="Merchant name too long")
+        # Allow alphanumeric, spaces, and basics like & - ' . 
+        # Reject heavy symbols to prevent weird spam
+        if not re.match(r"^[a-zA-Z0-9\s\-\&\.\']+$", merchant_name):
+             raise HTTPException(status_code=400, detail="Merchant name contains invalid characters. Only letters, numbers, spaces, and &-.' are allowed.")
+
         # Check if canonical merchant exists with this name (exact match)
         merchant = session.exec(select(Merchant).where(Merchant.canonical_name == merchant_name)).first()
         
@@ -396,7 +412,9 @@ def get_rate_suggestions(
 
 
 @router.post("/{entry_id}/suggestions", response_model=None)
+@limiter.limit("10/minute")
 def create_rate_suggestion(
+    request: Request,
     entry_id: uuid.UUID,
     suggestion_data: dict,
     session: Session = Depends(get_session),
@@ -570,7 +588,7 @@ def vote_rate_suggestion(
         entry = session.get(CashbackEntry, suggestion.entry_id)
         if entry:
             entry.reported_cashback_rate = suggestion.proposed_rate
-            entry.last_verified_at = datetime.utcnow()
+            entry.last_verified_at = ist_now()
             session.add(entry)
             
             # 2. Mark Suggestion

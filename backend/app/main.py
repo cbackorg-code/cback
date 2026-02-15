@@ -17,11 +17,16 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-origins = [
-    "http://localhost:5173",  # Vite default
-    "http://localhost:3000",
-    "*", # For now allow all
-]
+origins_str = os.environ.get("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000")
+origins = origins_str.split(",")
+
+# Rate Limiting Setup
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from app.limiter import limiter
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,

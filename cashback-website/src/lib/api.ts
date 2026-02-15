@@ -49,6 +49,7 @@ export interface ProfileStats {
     stats: {
         total_contributions: number;
         total_entries: number;
+        approved_edits: number;
         reputation: number;
     };
     recent_activity: Array<{
@@ -215,6 +216,16 @@ export const api = {
         const headers = await api.getHeaders();
         const res = await fetch(`${API_URL}/stats/dashboard`, { headers });
         if (!res.ok) throw new Error('Failed to fetch dashboard stats');
+        return res.json();
+    },
+
+    getPublicProfile: async (userId: string): Promise<ProfileStats> => {
+        const headers = await api.getHeaders();
+        const res = await fetch(`${API_URL}/profile/${userId}`, { headers });
+        if (!res.ok) {
+            if (res.status === 404) throw new Error("User not found");
+            throw new Error('Failed to fetch public profile');
+        }
         return res.json();
     }
 };

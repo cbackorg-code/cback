@@ -9,12 +9,14 @@ interface LayoutProps {
     children: ReactNode;
     onLogoClick?: () => void;
     onProfileClick?: () => void;
-    user: { name: string; email: string; picture?: string } | null;
-    onLogin: (user: { name: string; email: string; picture?: string }) => void;
+    user: { name: string; email: string; avatar_url?: string; reputation?: number } | null;
+    onLogin: (user: { name: string; email: string; avatar_url?: string; reputation?: number }) => void;
     onLogout: () => void;
     onOpenLogin: () => void;
     onCloseLogin: () => void;
+    onCloseLogin: () => void;
     isLoginOpen: boolean;
+    onDocsClick: () => void;
 }
 
 export default function Layout({
@@ -26,9 +28,10 @@ export default function Layout({
     onLogout,
     onOpenLogin,
     onCloseLogin,
-    isLoginOpen
+    isLoginOpen,
+    onDocsClick
 }: LayoutProps) {
-    const handleLoginSuccess = (user: { name: string; email: string; picture?: string }) => {
+    const handleLoginSuccess = (user: { name: string; email: string; avatar_url?: string; reputation?: number }) => {
         onLogin(user);
         onCloseLogin();
     };
@@ -74,6 +77,7 @@ export default function Layout({
                                         open={isLoginOpen}
                                         onOpenChange={(open) => open ? onOpenLogin() : onCloseLogin()}
                                         onLogin={handleLoginSuccess}
+                                        onDocsClick={onDocsClick}
                                     />
                                 </>
                             )}

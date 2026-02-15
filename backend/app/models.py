@@ -1,9 +1,14 @@
 from typing import Optional, List
 from enum import Enum
 from sqlmodel import SQLModel, Field, Relationship
-from datetime import datetime, date
+from datetime import datetime, date, timedelta, timezone
 import uuid
 import sqlalchemy as sa
+
+# Helper for IST Text
+def ist_now():
+    """Returns current time in IST (Naive) for DB matching user expectation"""
+    return datetime.utcnow() + timedelta(hours=5, minutes=30)
 
 # 0. ENUMS
 # ------------------------------
@@ -35,7 +40,7 @@ class Profile(SQLModel, table=True):
     avatar_url: Optional[str] = None
     role: str = Field(default="user") # 'user', 'admin', 'moderator'
     reputation_score: int = Field(default=0)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=ist_now)
 
     # Relationships
     entries: List["CashbackEntry"] = Relationship(back_populates="contributor")
@@ -60,7 +65,7 @@ class Card(SQLModel, table=True):
     image_url: Optional[str] = None
     max_cashback_rate: float = Field(default=0.0)
     active: bool = Field(default=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=ist_now)
 
     # Relationships
     entries: List["CashbackEntry"] = Relationship(back_populates="card")
@@ -77,7 +82,7 @@ class Merchant(SQLModel, table=True):
     category: Optional[str] = None # e.g. "Dining", "Travel"
     default_mcc: Optional[str] = None
     website: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=ist_now)
 
     # Relationships
     aliases: List["MerchantAlias"] = Relationship(back_populates="merchant")
@@ -91,9 +96,9 @@ class MerchantAlias(SQLModel, table=True):
     __tablename__ = "merchant_aliases"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    merchant_id: uuid.UUID = Field(foreign_key="merchants.id")
+    merchant_id: uuid.UUID = Field(foreign_key="merchants.id", index=True)
     alias_text: str = Field(index=True) # e.g. "STARBUCKS COFFEE #123"
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=ist_now)
 
     # Relationships
     merchant: Merchant = Relationship(back_populates="aliases")
@@ -106,11 +111,11 @@ class CashbackEntry(SQLModel, table=True):
     __tablename__ = "cashback_entries"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    card_id: uuid.UUID = Field(foreign_key="cards.id")
-    merchant_id: uuid.UUID = Field(foreign_key="merchants.id")
-    contributor_id: uuid.UUID = Field(foreign_key="profiles.id")
+    card_id: uuid.UUID = Field(foreign_key="cards.id", index=True)
+    merchant_id: uuid.UUID = Field(foreign_key="merchants.id", index=True)
+    contributor_id: uuid.UUID = Field(foreign_key="profiles.id", index=True)
     
-    statement_name: str # The specific name on the statement
+    statement_name: str = Field(index=True) # The specific name on the statement
     reported_cashback_rate: float = Field(default=0.0)
     mcc: Optional[str] = None
     notes: Optional[str] = None
@@ -125,8 +130,8 @@ class CashbackEntry(SQLModel, table=True):
     upvote_count: int = Field(default=0)
     downvote_count: int = Field(default=0)
     
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=ist_now)
+    updated_at: datetime = Field(default_factory=ist_now)
 
     # Relationships
     card: Card = Relationship(back_populates="entries")
@@ -146,7 +151,7 @@ class EntryVote(SQLModel, table=True):
     entry_id: uuid.UUID = Field(foreign_key="cashback_entries.id", primary_key=True)
     user_id: uuid.UUID = Field(foreign_key="profiles.id", primary_key=True)
     vote_type: VoteType = Field(sa_column=sa.Column(sa.Enum(VoteType, name="vote_type", create_type=False), nullable=False)) # "up" or "down"
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=ist_now)
 
     # Relationships
     entry: CashbackEntry = Relationship(back_populates="votes")
@@ -164,7 +169,7 @@ class EntryComment(SQLModel, table=True):
     author_id: uuid.UUID = Field(foreign_key="profiles.id", index=True)
     content: str
     is_deleted: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=ist_now)
     updated_at: Optional[datetime] = None
 
     # Relationships
@@ -192,7 +197,7 @@ class RateSuggestion(SQLModel, table=True):
     upvotes: int = Field(default=0)
     downvotes: int = Field(default=0)
     
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=ist_now)
     
     # Relationships
     entry: CashbackEntry = Relationship(back_populates="rate_suggestions")
@@ -209,7 +214,7 @@ class RateSuggestionVote(SQLModel, table=True):
     suggestion_id: uuid.UUID = Field(foreign_key="rate_suggestions.id", primary_key=True)
     user_id: uuid.UUID = Field(foreign_key="profiles.id", primary_key=True)
     vote_type: VoteType = Field(sa_column=sa.Column(sa.Enum(VoteType, name="vote_type", create_type=False), nullable=False)) # "up", "down"
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=ist_now)
 
     # Relationships
     suggestion: RateSuggestion = Relationship(back_populates="votes")

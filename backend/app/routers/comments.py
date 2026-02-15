@@ -43,7 +43,8 @@ def get_entry_comments(
             comment_dict["author"] = {
                 "id": str(comment.author.id),
                 "display_name": comment.author.display_name,
-                "reputation_score": comment.author.reputation_score
+                "reputation_score": comment.author.reputation_score,
+                "avatar_url": comment.author.avatar_url
             }
         
         response.append(comment_dict)
@@ -99,7 +100,8 @@ def create_comment(
         response["author"] = {
             "id": str(refreshed_comment.author.id),
             "display_name": refreshed_comment.author.display_name,
-            "reputation_score": refreshed_comment.author.reputation_score
+            "reputation_score": refreshed_comment.author.reputation_score,
+            "avatar_url": refreshed_comment.author.avatar_url
         }
     
     return response

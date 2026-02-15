@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { LogOut, User, ChevronDown } from "lucide-react";
-import { Button } from "./ui/button";
+import { UserAvatar } from "./UserAvatar";
 
 interface UserMenuProps {
-    user: { name: string; email: string };
+    user: { name: string; email: string; avatar_url?: string; reputation?: number };
     onLogout: () => void;
     onProfileClick?: () => void;
 }
@@ -28,14 +28,6 @@ export function UserMenu({ user, onLogout, onProfileClick }: UserMenuProps) {
         };
     }, [isOpen]);
 
-    // Get initials
-    const initials = user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
-
     return (
         <div className="relative" ref={menuRef}>
             <button
@@ -46,9 +38,7 @@ export function UserMenu({ user, onLogout, onProfileClick }: UserMenuProps) {
                     <p className="text-sm font-medium leading-none text-foreground">{user.name}</p>
                 </div>
 
-                <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full gradient-primary flex items-center justify-center shadow-md ring-2 ring-background group-hover:scale-105 transition-transform duration-200">
-                    <span className="text-xs sm:text-sm font-bold text-white">{initials}</span>
-                </div>
+                <UserAvatar user={user} size="sm" />
 
                 <ChevronDown className={`h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
             </button>

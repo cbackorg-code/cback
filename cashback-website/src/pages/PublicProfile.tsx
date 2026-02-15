@@ -1,4 +1,4 @@
-import { ArrowLeft, Mail, Calendar, Award, Edit, Plus, TrendingUp } from "lucide-react";
+import { ArrowLeft, Calendar, Award, Edit, Plus, TrendingUp } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import StatCard from "../components/StatCard";
@@ -8,12 +8,12 @@ import { api } from "../lib/api";
 import type { ProfileStats } from "../lib/api";
 import { toast } from "sonner";
 
-interface ProfileProps {
+interface PublicProfileProps {
+    userId: string;
     onBack: () => void;
-    user: { name: string; email: string; avatar_url?: string; reputation?: number };
 }
 
-export default function Profile({ onBack, user }: ProfileProps) {
+export default function PublicProfile({ userId, onBack }: PublicProfileProps) {
     const [profileData, setProfileData] = useState<ProfileStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -21,22 +21,20 @@ export default function Profile({ onBack, user }: ProfileProps) {
         const fetchProfile = async () => {
             setIsLoading(true);
             try {
-                const data = await api.getProfile();
+                const data = await api.getPublicProfile(userId);
                 setProfileData(data);
             } catch (error: any) {
-                console.error("Error fetching profile:", error);
-                if (error.message === "Unauthorized") {
-                    toast.error("Please login to view your profile");
-                } else {
-                    toast.error("Failed to load profile data");
-                }
+                console.error("Error fetching public profile:", error);
+                toast.error("Failed to load contributor profile");
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchProfile();
-    }, []);
+        if (userId) {
+            fetchProfile();
+        }
+    }, [userId]);
 
     if (isLoading) {
         return (
@@ -49,14 +47,13 @@ export default function Profile({ onBack, user }: ProfileProps) {
     if (!profileData) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
-                <p className="text-muted-foreground">Failed to load profile</p>
+                <p className="text-muted-foreground">User not found</p>
                 <Button onClick={onBack}>Go Back</Button>
             </div>
         );
     }
 
     const stats = {
-        initials: user.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase(),
         joinDate: new Date(profileData.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
         reputation: profileData.reputation_score,
         contributions: profileData.stats.total_contributions
@@ -102,7 +99,7 @@ export default function Profile({ onBack, user }: ProfileProps) {
                 >
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <h1 className="text-2xl font-bold tracking-tight">Your Profile</h1>
+                <h1 className="text-2xl font-bold tracking-tight">Contributor Profile</h1>
             </div>
 
             {/* User Profile Card */}
@@ -111,12 +108,11 @@ export default function Profile({ onBack, user }: ProfileProps) {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
 
                 {/* Avatar */}
-                {/* Avatar */}
                 <UserAvatar
                     user={{
-                        name: user.name,
-                        avatar_url: user.avatar_url,
-                        reputation: user.reputation || stats.reputation
+                        name: profileData.display_name,
+                        avatar_url: profileData.avatar_url,
+                        reputation: stats.reputation
                     }}
                     className="h-24 w-24 sm:h-32 sm:w-32 shadow-xl ring-4 text-3xl sm:text-4xl"
                 />
@@ -124,10 +120,8 @@ export default function Profile({ onBack, user }: ProfileProps) {
                 {/* User Info */}
                 <div className="text-center sm:text-left space-y-2 py-2 flex-1 relative z-10">
                     <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold">{user.name}</h2>
-                        <p className="text-muted-foreground flex items-center justify-center sm:justify-start gap-2 mt-1">
-                            <Mail className="h-4 w-4" /> {user.email}
-                        </p>
+                        <h2 className="text-2xl sm:text-3xl font-bold">{profileData.display_name}</h2>
+                        {/* No Email Display for Public Profile */}
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-4 mt-4 pt-2">
@@ -162,11 +156,10 @@ export default function Profile({ onBack, user }: ProfileProps) {
                     description="Improvements made"
                 />
                 <StatCard
-                    title="Current Streak"
-                    value={contributions.length > 0 ? `${contributions.length} Days` : "0 Days"}
+                    title="Total Contribution"
+                    value={contributions.length > 0 ? `${contributions.length}` : "0"}
                     icon={TrendingUp}
-                    description="Consecutive activity"
-                    trend={contributions.length > 3 ? "Fire!" : undefined}
+                    description="Recent activity count"
                 />
                 <StatCard
                     title="Total Points"
@@ -189,7 +182,7 @@ export default function Profile({ onBack, user }: ProfileProps) {
                     <CardContent className="p-0">
                         {contributions.length === 0 ? (
                             <div className="p-8 text-center text-muted-foreground">
-                                No contributions yet. Start adding merchants to build your reputation!
+                                No recent activity to show.
                             </div>
                         ) : (
                             <div className="divide-y divide-white/5">
@@ -212,9 +205,6 @@ export default function Profile({ onBack, user }: ProfileProps) {
                                                 </p>
                                                 <p className="text-xs text-muted-foreground">{item.date}</p>
                                             </div>
-                                        </div>
-                                        <div className="font-mono font-bold text-primary">
-                                            {item.points}
                                         </div>
                                     </div>
                                 ))}

@@ -1,5 +1,5 @@
 import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+
 import { cn } from "../../lib/utils"
 
 // Needs class-variance-authority, installing it now via command in parallel or next step

@@ -361,7 +361,7 @@ export default function MerchantList({ cardId, onBack, onMerchantSelect, isAuthe
                 onOpenChange={setIsAddDialogOpen}
                 cardId={currentCard?.id} // Pass UUID instead of name
                 cardName={card?.name || ""} // Keep for display
-                maxRate={card?.maxCashbackRate || 5}
+                maxRate={card?.max_cashback_rate || 5}
                 existingStatementNames={entries.map(e => e.statementName)}
                 existingMerchantNames={uniqueMerchants}
                 existingMCCs={uniqueMCCs}
