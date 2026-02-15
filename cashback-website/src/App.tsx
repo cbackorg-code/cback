@@ -216,7 +216,6 @@ function App() {
         onLogoClick={handleLogoClick}
         onProfileClick={handleProfileClick}
         user={user}
-        onLogin={handleLogin}
         onLogout={handleLogout}
         isLoginOpen={isLoginOpen}
         onOpenLogin={() => setIsLoginOpen(true)}
