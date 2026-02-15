@@ -76,7 +76,6 @@ export default function Layout({
                                     <LoginDialog
                                         open={isLoginOpen}
                                         onOpenChange={(open) => open ? onOpenLogin() : onCloseLogin()}
-                                        onLogin={handleLoginSuccess}
                                         onDocsClick={onDocsClick}
                                     />
                                 </>

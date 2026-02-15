@@ -17,11 +17,10 @@ import { Checkbox } from "./ui/checkbox";
 interface LoginDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onLogin: (user: { name: string; email: string; picture?: string }) => void;
     onDocsClick: () => void;
 }
 
-export function LoginDialog({ open, onOpenChange, onLogin, onDocsClick }: LoginDialogProps) {
+export function LoginDialog({ open, onOpenChange, onDocsClick }: LoginDialogProps) {
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [isTermsAccepted, setIsTermsAccepted] = useState(false);
 

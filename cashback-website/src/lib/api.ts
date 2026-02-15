@@ -34,7 +34,7 @@ export interface CashbackEntry {
     last_verified_at?: string;
     card?: Card;
     merchant?: Merchant;
-    contributor?: { display_name: string };
+    contributor?: { id: string; display_name: string };
     user_vote?: 'up' | 'down' | null;
 }
 
