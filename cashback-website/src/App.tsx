@@ -116,32 +116,7 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleLogin = async (user: { name: string; email: string; avatar_url?: string; reputation?: number }) => {
-    if (user.email === 'demo@example.com') {
-      isDemoRef.current = true;
-      localStorage.setItem('demo_mode', 'true');
 
-      // Set initial state
-      setUser(user);
-      setIsLoginOpen(false);
-
-      // Fetch real profile to get correct reputation
-      try {
-        const profile = await api.getProfile();
-        setUser(prev => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            reputation: profile.reputation_score,
-            avatar_url: profile.avatar_url || prev.avatar_url,
-            name: profile.display_name || prev.name
-          };
-        });
-      } catch (e) {
-        console.error("Failed to fetch demo profile details", e);
-      }
-    }
-  };
 
   const handleLogout = async () => {
     if (isDemoRef.current) {
