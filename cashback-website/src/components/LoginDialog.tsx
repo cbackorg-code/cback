@@ -113,27 +113,7 @@ export function LoginDialog({ open, onOpenChange, onLogin, onDocsClick }: LoginD
                         <span className="font-medium text-[#1f1f1f]">Sign in with Google</span>
                     </Button>
 
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-white/10" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-background px-2 text-muted-foreground">Or Use Demo Account</span>
-                        </div>
-                    </div>
 
-                    <Button
-                        onClick={() => {
-                            onLogin({ name: "Demo User", email: "demo@example.com" });
-                            onOpenChange(false);
-                            toast.success("Signed in as Demo User (Local Mode)");
-                        }}
-                        variant="ghost"
-                        className="w-full h-11 rounded-xl border border-dashed border-white/20 hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={!isTermsAccepted}
-                    >
-                        Skip & Continue as Guest (Demo)
-                    </Button>
                 </div>
             </DialogContent>
         </Dialog>
