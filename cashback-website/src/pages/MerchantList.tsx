@@ -32,14 +32,20 @@ export default function MerchantList({ cardId, onBack, onMerchantSelect, isAuthe
     // API State
     const [merchants, setMerchants] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [refreshKey, setRefreshKey] = useState(0);
+
+    // Pagination State
+    const [offset, setOffset] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
+    const LIMIT = 50;
 
     // V1: Fetch real cards
 
     const [currentCard, setCurrentCard] = useState<any>(null);
 
+
     const handleRefresh = () => {
-        setRefreshKey(prev => prev + 1);
+        // Reload from scratch
+        loadMerchants(0, true);
     };
 
     // Fetch cards on mount
@@ -56,58 +62,97 @@ export default function MerchantList({ cardId, onBack, onMerchantSelect, isAuthe
         fetchCards();
     }, [cardId]);
 
+
     // Use currentCard instead of mockCards.find
     const card = currentCard;
 
-    // Fetch from API
+    // Reset pagination when filters change (search or SORT)
     useEffect(() => {
-        const fetchMerchants = async () => {
-            setIsLoading(true);
-            try {
-                // Fetch entries for this card
-                // cardId is the slug (e.g. sbi-cashback). 
-                // We need to fetch cards first to get the UUID for 'sbi-cashback'.
-                const cards = await api.getCards();
-                const currentCardData = cards.find(c => c.id === cardId || c.slug === cardId);
+        setOffset(0);
+        setHasMore(true);
+        setMerchants([]); // Clear current list to avoid weird jumps
+        loadMerchants(0, true);
+    }, [searchQuery, cardId, sortBy]); // Add sortBy here!
 
-                if (!currentCardData) {
-                    console.error("Card not found for slug:", cardId);
-                    setMerchants([]);
+    // Load more when offset changes (for scrolling)
+    useEffect(() => {
+        if (offset > 0) {
+            loadMerchants(offset, false);
+        }
+    }, [offset]);
+
+    const loadMerchants = async (currentOffset: number, isReset: boolean) => {
+        if (!cardId && !currentCard) return;
+
+        setIsLoading(true);
+        try {
+            // Ensure card data
+            let targetCardId = currentCard?.id;
+            if (!targetCardId) {
+                const cards = await api.getCards();
+                const found = cards.find(c => c.id === cardId || c.slug === cardId);
+                if (found) {
+                    setCurrentCard(found);
+                    targetCardId = found.id;
+                } else {
+                    console.error("Card not found");
+                    setIsLoading(false);
                     return;
                 }
-
-                setCurrentCard(currentCardData);
-                const data = await api.getEntries(searchQuery, currentCardData.id, 0, 100);
-
-                // Transform data to match frontend model
-                const mappedData = data.map((entry: any) => ({
-                    id: entry.id,
-                    cardId: cardId,
-                    merchant: entry?.merchant?.canonical_name || "Unknown",
-                    statementName: entry.statement_name || "",
-                    cashbackRate: `${entry.reported_cashback_rate}%`,
-                    mcc: entry.mcc || "",
-                    contributor: entry?.contributor?.display_name || "Community",
-                    date: new Date(entry.created_at).toLocaleDateString(),
-                    comments: entry.notes || "",
-                    lastVerified: entry.last_verified_at ? new Date(entry.last_verified_at).toLocaleDateString() : ""
-                }));
-
-                setMerchants(mappedData);
-            } catch (error) {
-                console.error("Error fetching entries:", error);
-                toast.error("Failed to load entries");
-            } finally {
-                setIsLoading(false);
             }
+
+            // Pass sortBy to API
+            const data = await api.getEntries(searchQuery, targetCardId, currentOffset, LIMIT, sortBy);
+
+            // Transform data
+            const mappedData = data.map((entry: any) => ({
+                id: entry.id,
+                cardId: cardId,
+                merchant: entry?.merchant?.canonical_name || "Unknown",
+                statementName: entry.statement_name || "",
+                cashbackRate: `${entry.reported_cashback_rate}%`,
+                mcc: entry.mcc || "",
+                contributor: entry?.contributor?.display_name || "Community",
+                date: new Date(entry.created_at).toLocaleDateString(),
+                comments: entry.notes || "",
+                lastVerified: entry.last_verified_at ? new Date(entry.last_verified_at).toLocaleDateString() : ""
+            }));
+
+            if (mappedData.length < LIMIT) {
+                setHasMore(false);
+            }
+
+            setMerchants(prev => isReset ? mappedData : [...prev, ...mappedData]);
+
+        } catch (error) {
+            console.error("Error fetching entries:", error);
+            toast.error("Failed to load entries");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
+
+    // Observer for Infinite Scroll
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            entries => {
+                const entry = entries[0];
+                if (entry.isIntersecting && !isLoading && hasMore) {
+                    setOffset(prev => prev + LIMIT);
+                }
+            },
+            { threshold: 0.1, rootMargin: "100px" }
+        );
+
+        const target = document.querySelector("#load-more-trigger");
+        if (target) observer.observe(target);
+
+        return () => {
+            if (target) observer.unobserve(target);
         };
-
-        const timeoutId = setTimeout(() => {
-            fetchMerchants();
-        }, 300); // Debounce
-
-        return () => clearTimeout(timeoutId);
-    }, [searchQuery, cardId, refreshKey]); // Re-fetch on search change
+    }, [isLoading, hasMore]);
 
     const entries = merchants; // Use fetched data
 
@@ -131,6 +176,7 @@ export default function MerchantList({ cardId, onBack, onMerchantSelect, isAuthe
     }, [entries]);
 
     const filteredAndSortedEntries = useMemo(() => {
+        // Only Filter locally. SORTING IS NOW SERVER-SIDE.
         let filtered = entries;
 
         if (searchQuery.trim()) {
@@ -143,16 +189,9 @@ export default function MerchantList({ cardId, onBack, onMerchantSelect, isAuthe
             );
         }
 
-        const sorted = [...filtered].sort((a, b) => {
-            if (sortBy === "merchant") return a.merchant.localeCompare(b.merchant);
-            if (sortBy === "cashback-high") return (parseInt(b.cashbackRate) || 0) - (parseInt(a.cashbackRate) || 0);
-            if (sortBy === "cashback-low") return (parseInt(a.cashbackRate) || 0) - (parseInt(b.cashbackRate) || 0);
-            if (sortBy === "verified") return (b.lastVerified ? 1 : 0) - (a.lastVerified ? 1 : 0);
-            return 0;
-        });
-
-        return sorted;
-    }, [entries, searchQuery, sortBy]);
+        // No client-side sorting!
+        return filtered;
+    }, [entries, searchQuery]);
 
     const getCashbackStyle = (rate: string) => {
         const rateNum = parseInt(rate) || 0;
@@ -287,11 +326,11 @@ export default function MerchantList({ cardId, onBack, onMerchantSelect, isAuthe
                                             <Store className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <h3 className="font-semibold text-sm sm:text-base text-foreground truncate">{entry.merchant}</h3>
-                                            <p className="text-[10px] sm:text-xs text-muted-foreground truncate font-mono">{entry.statementName}</p>
+                                            <h3 className="font-semibold text-base sm:text-lg text-foreground truncate">{entry.merchant}</h3>
+                                            <p className="text-xs sm:text-sm text-muted-foreground truncate font-mono">{entry.statementName}</p>
                                         </div>
                                     </div>
-                                    <div className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-bold border ${style.bg} ${style.text} ${style.border} shrink-0`}>
+                                    <div className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-sm sm:text-base font-bold border ${style.bg} ${style.text} ${style.border} shrink-0`}>
                                         {entry.cashbackRate || "0%"}
                                     </div>
                                 </div>
@@ -301,11 +340,11 @@ export default function MerchantList({ cardId, onBack, onMerchantSelect, isAuthe
                                     {entry.comments && (
                                         <div className="flex items-start gap-2">
                                             <MessageSquare className="h-3 w-3 mt-0.5 text-muted-foreground shrink-0" />
-                                            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{entry.comments}</p>
+                                            <p className="text-sm sm:text-base text-muted-foreground line-clamp-2">{entry.comments}</p>
                                         </div>
                                     )}
 
-                                    <div className="flex items-center justify-between text-[10px] sm:text-xs">
+                                    <div className="flex items-center justify-between text-xs sm:text-sm">
                                         <div className="flex items-center gap-2 text-muted-foreground">
                                             {entry.lastVerified && (
                                                 <span className="flex items-center gap-1 text-emerald-400">
@@ -348,6 +387,14 @@ export default function MerchantList({ cardId, onBack, onMerchantSelect, isAuthe
             )}
 
             {/* Floating Add Entry Button */}
+            <div id="load-more-trigger" className="h-4 w-full opacity-0 pointer-events-none" />
+
+            {isLoading && merchants.length > 0 && (
+                <div className="flex justify-center py-4">
+                    <Loader2 className="h-6 w-6 text-primary animate-spin" />
+                </div>
+            )}
+
             <Button
                 className="fixed bottom-6 right-6 h-14 w-14 sm:h-auto sm:w-auto sm:px-6 rounded-full btn-gradient text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 z-40"
                 onClick={handleAddEntry}

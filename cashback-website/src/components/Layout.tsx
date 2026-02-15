@@ -45,7 +45,7 @@ export default function Layout({
                             </div>
                             <div className="flex flex-col">
                                 <span className="font-bold text-lg sm:text-2xl gradient-text">
-                                    BackCash
+                                    CBack
                                 </span>
                                 <span className="text-[9px] sm:text-[10px] text-muted-foreground -mt-0.5 sm:-mt-1 hidden xs:block">
                                     Smart Cashback Tracking
@@ -96,7 +96,7 @@ export default function Layout({
                                 Built for credit card enthusiasts. Community-driven. Open Source.
                             </p>
                             <p className="text-xs text-muted-foreground">
-                                © 2025 BackCash
+                                © 2025 CBack
                             </p>
                         </div>
                     </div>

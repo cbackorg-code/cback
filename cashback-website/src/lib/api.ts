@@ -95,10 +95,11 @@ export const api = {
         return res.json();
     },
 
-    getEntries: async (search?: string, cardId?: string, offset = 0, limit = 20): Promise<CashbackEntry[]> => {
+    getEntries: async (search?: string, cardId?: string, offset = 0, limit = 20, sortBy: string = 'merchant'): Promise<CashbackEntry[]> => {
         const queryParams = new URLSearchParams({
             offset: offset.toString(),
             limit: limit.toString(),
+            sort: sortBy
         });
         if (search) queryParams.append('search', search);
         if (cardId) queryParams.append('card_id', cardId);

@@ -99,7 +99,7 @@ export default function DocsPage({ onBack }: DocsPageProps) {
                 <Card className="glass-card border-l-4 border-l-emerald-400">
                     <CardContent className="p-6 space-y-4 text-sm leading-relaxed text-muted-foreground">
                         <p>
-                            BackCash is a community-driven platform. We rely on users like you to keep data accurate.
+                            CBack is a community-driven platform. We rely on users like you to keep data accurate.
                         </p>
                         <ul className="list-disc pl-5 space-y-2">
                             <li><strong className="text-foreground">Be Accurate:</strong> Only add cashback rates you have personally verified or have official proof for.</li>

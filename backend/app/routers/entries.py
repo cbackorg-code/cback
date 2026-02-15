@@ -22,6 +22,7 @@ def read_entries(
     card_id: Optional[uuid.UUID] = None,
     merchant_id: Optional[uuid.UUID] = None,
     search: Optional[str] = None,
+    sort: Optional[str] = "merchant",
     offset: int = 0,
     limit: int = Query(default=20, le=100),
     session: Session = Depends(get_session),
@@ -45,6 +46,10 @@ def read_entries(
             (col(CashbackEntry.statement_name).ilike(f"%{search}%")) |
             (col(MerchantAlias.alias_text).ilike(f"%{search}%"))
         ).distinct()
+    else:
+        # If no search, we still need to join Merchant for sorting by merchant name
+        if sort == "merchant":
+             query = query.join(Merchant)
     
     if card_id:
         query = query.where(CashbackEntry.card_id == card_id)
@@ -52,7 +57,21 @@ def read_entries(
     if merchant_id:
         query = query.where(CashbackEntry.merchant_id == merchant_id)
         
-    
+    # Sorting Logic
+    if sort == "cashback-high":
+        query = query.order_by(col(CashbackEntry.reported_cashback_rate).desc(), col(CashbackEntry.updated_at).desc())
+    elif sort == "cashback-low":
+        query = query.order_by(col(CashbackEntry.reported_cashback_rate).asc(), col(CashbackEntry.updated_at).desc())
+    elif sort == "verified":
+        # Sort by last_verified_at desc (nulls last)
+        query = query.order_by(col(CashbackEntry.last_verified_at).desc().nulls_last())
+    elif sort == "newest":
+        query = query.order_by(col(CashbackEntry.created_at).desc())
+    else: # default "merchant"
+        # Sort by Merchant Name
+        # Note: We ensured Merchant is joined above if search is empty
+        query = query.order_by(col(Merchant.canonical_name).asc())
+
     entries = session.exec(query.offset(offset).limit(limit)).all()
     
 
