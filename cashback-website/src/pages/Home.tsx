@@ -8,6 +8,8 @@ interface CardSelectorProps {
     onCardSelect: (cardId: string) => void;
 }
 
+import SEO from "../components/SEO";
+
 export default function Home({ onCardSelect }: CardSelectorProps) {
     const [cards, setCards] = useState<Card[]>([]);
     const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -45,6 +47,17 @@ export default function Home({ onCardSelect }: CardSelectorProps) {
 
     return (
         <div className="space-y-6 sm:space-y-8">
+            <SEO
+                title="Best Credit Card Cashback Rates, MCC Codes & Offers | CBack"
+                description="Find the best cashback credit cards and offers. Compare rates, verified by the community. Check MCC codes for Swiggy HDFC, SBI Cashback, Amazon ICICI, and more."
+                keywords={[
+                    "cashback", "credit cards", "cback", "cashback rate", "mccs", "mcc",
+                    "merchant code", "merchant codes", "swiggy hdfc", "sbi cashback",
+                    "sbi phonepe", "amazon icici", "credit card offers", "best cashback credit cards",
+                    "merchant category codes", "credit card rewards", "shopping offers",
+                    "hdfc millenia", "axis ace", "flipkart axis", "hsbc cashback"
+                ]}
+            />
             {/* Hero Section */}
             <div className="text-center space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-center gap-2 mb-2">
@@ -52,10 +65,10 @@ export default function Home({ onCardSelect }: CardSelectorProps) {
                     <span className="text-sm sm:text-base font-medium text-accent">Smart Cashback Intelligence</span>
                 </div>
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight pb-1 px-2">
-                    Check Your Cashback Like a Pro
+                    Maximize Your Rewards with CBack
                 </h1>
                 <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-                    Discover which merchants give you the best cashback rates. Community-verified data from real users.
+                    Check your cashback like a pro. CBack helps you discover the best merchant rates verified by the community.
                 </p>
             </div>
 

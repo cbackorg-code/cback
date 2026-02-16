@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { LoginDialog } from "./LoginDialog";
 import { UserMenu } from "./UserMenu";
+import SEO from "./SEO";
 
 interface LayoutProps {
     children: ReactNode;
@@ -31,6 +32,7 @@ export default function Layout({
 
     return (
         <div className="flex flex-col min-h-screen text-foreground">
+            <SEO />
             {/* Floating Navbar */}
             <header className="sticky top-0 z-50 w-full px-3 sm:px-4 pt-3 sm:pt-4">
                 <nav className="floating-navbar mx-auto max-w-6xl">

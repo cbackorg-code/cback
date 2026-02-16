@@ -1,0 +1,5 @@
+DATABASE_URL: sqlite:///./backend_app.db...
+Using SQLite
+--- First 20 Entries (Should be High Cashback) ---
+ID: 8d04e2fb-506d-48e7-9960-aed78a17f35b | Merchant: Starbucks | Rate: 5.0
+ID: 24a4184a-97d6-43ab-9fb9-7f545a02dc9f | Merchant: Amazon | Rate: 1.0

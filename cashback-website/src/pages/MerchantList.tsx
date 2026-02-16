@@ -23,6 +23,8 @@ interface MerchantTableProps {
     onOpenLogin: () => void;
 }
 
+import SEO from "../components/SEO";
+
 export default function MerchantList({ cardId, onBack, onMerchantSelect, isAuthenticated, onOpenLogin }: MerchantTableProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState("merchant");
@@ -235,6 +237,15 @@ export default function MerchantList({ cardId, onBack, onMerchantSelect, isAuthe
 
     return (
         <div className="space-y-4 sm:space-y-6 pb-24">
+            <SEO
+                title={`${card?.name || 'Unknown Card'} Cashback Merchants | CBack`}
+                description={`List of merchants with cashback rates for ${card?.name || 'credit card'}. Verified by community. Check MCC codes and best offers.`}
+                keywords={[
+                    `${card?.name}`, "cashback", "merchants", "rates", "mcc codes",
+                    "credit card offers", "shopping rewards", "discount",
+                    "swiggy hdfc", "sbi cashback", "amazon icici"
+                ]}
+            />
             {/* Header */}
             <div className="flex items-center justify-between gap-3 sm:gap-4">
                 <div className="flex items-center gap-3 sm:gap-4 min-w-0">

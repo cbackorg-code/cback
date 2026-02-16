@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { HelmetProvider } from 'react-helmet-async';
 import { ThemeProvider } from "./components/ThemeProvider";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
@@ -186,45 +187,47 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="backcash-theme">
-      <Layout
-        onLogoClick={handleLogoClick}
-        onProfileClick={handleProfileClick}
-        user={user}
-        onLogout={handleLogout}
-        isLoginOpen={isLoginOpen}
-        onOpenLogin={() => setIsLoginOpen(true)}
-        onCloseLogin={() => setIsLoginOpen(false)}
-        onDocsClick={handleDocsClick}
-      >
-        {view === 'profile' && user ? (
-          <Profile onBack={handleBack} user={user} />
-        ) : view === 'public_profile' && publicProfileId ? (
-          <PublicProfile userId={publicProfileId} onBack={handleBack} />
-        ) : view === 'docs' ? (
-          <DocsPage onBack={handleBack} />
-        ) : selectedMerchantId && selectedCardId ? (
-          <MerchantDetails
-            merchantId={selectedMerchantId}
-            onBack={handleBack}
-            isAuthenticated={!!user}
-            onOpenLogin={() => setIsLoginOpen(true)}
-            onUserClick={handlePublicProfileClick}
-          />
-        ) : selectedCardId ? (
-          <MerchantList
-            cardId={selectedCardId}
-            onBack={handleBack}
-            onMerchantSelect={handleMerchantSelect}
-            isAuthenticated={!!user}
-            onOpenLogin={() => setIsLoginOpen(true)}
-          />
-        ) : (
-          <Home onCardSelect={handleCardSelect} />
-        )}
-      </Layout>
-      <Toaster />
-    </ThemeProvider>
+    <HelmetProvider>
+      <ThemeProvider defaultTheme="dark" storageKey="backcash-theme">
+        <Layout
+          onLogoClick={handleLogoClick}
+          onProfileClick={handleProfileClick}
+          user={user}
+          onLogout={handleLogout}
+          isLoginOpen={isLoginOpen}
+          onOpenLogin={() => setIsLoginOpen(true)}
+          onCloseLogin={() => setIsLoginOpen(false)}
+          onDocsClick={handleDocsClick}
+        >
+          {view === 'profile' && user ? (
+            <Profile onBack={handleBack} user={user} />
+          ) : view === 'public_profile' && publicProfileId ? (
+            <PublicProfile userId={publicProfileId} onBack={handleBack} />
+          ) : view === 'docs' ? (
+            <DocsPage onBack={handleBack} />
+          ) : selectedMerchantId && selectedCardId ? (
+            <MerchantDetails
+              merchantId={selectedMerchantId}
+              onBack={handleBack}
+              isAuthenticated={!!user}
+              onOpenLogin={() => setIsLoginOpen(true)}
+              onUserClick={handlePublicProfileClick}
+            />
+          ) : selectedCardId ? (
+            <MerchantList
+              cardId={selectedCardId}
+              onBack={handleBack}
+              onMerchantSelect={handleMerchantSelect}
+              isAuthenticated={!!user}
+              onOpenLogin={() => setIsLoginOpen(true)}
+            />
+          ) : (
+            <Home onCardSelect={handleCardSelect} />
+          )}
+        </Layout>
+        <Toaster />
+      </ThemeProvider>
+    </HelmetProvider>
   );
 }
 

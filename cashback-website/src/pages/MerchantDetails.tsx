@@ -53,6 +53,8 @@ interface RateSuggestion {
     is_current_user?: boolean;
 }
 
+import SEO from "../components/SEO";
+
 export default function MerchantDetails({ merchantId, onBack, isAuthenticated, onOpenLogin, onUserClick }: MerchantDetailsProps) {
     const [newComment, setNewComment] = useState("");
     const [entry, setEntry] = useState<any>(null);
@@ -310,8 +312,43 @@ export default function MerchantDetails({ merchantId, onBack, isAuthenticated, o
 
     const style = getCashbackStyle(entry.cashbackRate);
 
+    // Structured Data for Merchant Entity
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": `${entry.merchant} Cashback via ${entry.cardName}`,
+        "description": `Get ${entry.cashbackRate} cashback at ${entry.merchant} using ${entry.cardName}.`,
+        "brand": {
+            "@type": "Brand",
+            "name": entry.merchant
+        },
+        "offers": {
+            "@type": "Offer",
+            "priceCurrency": "INR", // Assuming INR
+            "price": "0",
+            "priceValidUntil": "2026-12-31",
+            "availability": "https://schema.org/InStock"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "5", // Default high rating for verification
+            "bestRating": "5",
+            "ratingCount": Math.max(1, (entry.upvoteCount || 0) + (entry.downvoteCount || 0))
+        }
+    };
+
     return (
         <div className="space-y-6 pb-24">
+            <SEO
+                title={`${entry.merchant} Cashback - ${entry.cardName}`}
+                description={`Get ${entry.cashbackRate} cashback at ${entry.merchant} with ${entry.cardName}. Verified by the community. MCC Code for ${entry.merchant}.`}
+                keywords={[
+                    entry.merchant, entry.cardName, "cashback", "offers", entry.mcc,
+                    "merchant code", "discount", "credit card", "rewards",
+                    "swiggy hdfc", "sbi cashback", "amazon icici"
+                ]}
+                structuredData={structuredData}
+            />
             {/* Header */}
             <div className="flex items-start gap-4">
                 <Button
