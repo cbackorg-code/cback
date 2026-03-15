@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { CircleUser, CreditCard } from "lucide-react";
+import { CircleUser } from "lucide-react";
 import { Button } from "./ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { LoginDialog } from "./LoginDialog";
@@ -39,12 +39,23 @@ export default function Layout({
                     <div className="flex h-14 sm:h-16 items-center px-4 sm:px-6">
                         {/* Logo */}
                         <div
-                            className={`mr-4 flex items-center gap-2 sm:gap-3 ${onLogoClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                            className={`mr-4 flex flex-row items-center gap-2 sm:gap-3 ${onLogoClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
                             onClick={onLogoClick}
                         >
-                            <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl gradient-primary glow-primary shadow-lg">
-                                <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                            </div>
+                            <img
+                                src="/logo.png"
+                                alt="CBack Logo"
+                                className="h-8 sm:h-10 w-auto object-contain"
+                                onError={(e) => {
+                                    // Fallback to CreditCard if logo fails to load
+                                    const target = e.currentTarget as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    const container = document.createElement('div');
+                                    container.className = "flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl gradient-primary glow-primary shadow-lg";
+                                    container.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-credit-card text-white"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>';
+                                    target.parentElement!.insertBefore(container, target);
+                                }}
+                            />
                             <div className="flex flex-col">
                                 <span className="font-bold text-lg sm:text-2xl gradient-text">
                                     CBack
@@ -104,6 +115,6 @@ export default function Layout({
                     </div>
                 </div>
             </footer>
-        </div>
+        </div >
     );
 }

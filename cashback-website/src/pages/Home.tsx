@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CreditCard, TrendingUp, Users, Clock, Sparkles, Loader2 } from "lucide-react";
+import { CreditCard, TrendingUp, Users, Clock, Loader2 } from "lucide-react";
 import StatCard from "../components/StatCard";
 import { api } from "../lib/api";
 import type { Card, DashboardStats } from "../lib/api";
@@ -60,15 +60,11 @@ export default function Home({ onCardSelect }: CardSelectorProps) {
             />
             {/* Hero Section */}
             <div className="text-center space-y-3 sm:space-y-4">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                    <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-accent animate-pulse" />
-                    <span className="text-sm sm:text-base font-medium text-accent">Smart Cashback Intelligence</span>
-                </div>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight pb-1 px-2">
-                    Maximize Your Rewards with CBack
+                <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight pb-1 px-2">
+                    Check Real Cashback Rates
                 </h1>
                 <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-                    Check your cashback like a pro. CBack helps you discover the best merchant rates verified by the community.
+                    Stop guessing your rewards. See up-to-date, community-verified cashback rates for your favorite merchants.
                 </p>
             </div>
 
@@ -103,9 +99,9 @@ export default function Home({ onCardSelect }: CardSelectorProps) {
             {/* Card Selection */}
             <div className="space-y-4 sm:space-y-6">
                 <div className="text-center sm:text-left">
-                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Select Your Card</h2>
+                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Explore Rates by Card</h2>
                     <p className="text-sm sm:text-base text-muted-foreground">
-                        Choose a credit card to view cashback merchant entries
+                        Select a card below to see where people are getting the best cashback
                     </p>
                 </div>
 
@@ -139,16 +135,11 @@ export default function Home({ onCardSelect }: CardSelectorProps) {
                                         />
                                     </div>
 
-                                    {/* Hover Overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400 flex items-end p-4 sm:p-6">
-                                        <div className="w-full">
-                                            <div className="flex items-center gap-2 text-primary mb-1 sm:mb-2">
-                                                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
-                                                <span className="text-sm sm:text-base font-medium">View Merchants</span>
-                                            </div>
-                                            <p className="text-xs sm:text-sm text-muted-foreground">
-                                                Click to explore cashback offers
-                                            </p>
+                                    {/* Liquid Glass Button - Always Visible */}
+                                    <div className="absolute bottom-4 inset-x-4 flex justify-center">
+                                        <div className="w-auto glass-effect text-foreground/90 border border-white/20 shadow-lg backdrop-blur-md bg-white/10 dark:bg-black/10 hover:bg-white/20 dark:hover:bg-black/20 px-6 py-2.5 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 group-hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] group-hover:-translate-y-1">
+                                            <span>View Merchants</span>
+                                            <TrendingUp className="h-4 w-4" />
                                         </div>
                                     </div>
 
@@ -173,6 +164,6 @@ export default function Home({ onCardSelect }: CardSelectorProps) {
                     Don't see your card? Help the community by adding merchant data!
                 </p>
             </div>
-        </div>
+        </div >
     );
 }

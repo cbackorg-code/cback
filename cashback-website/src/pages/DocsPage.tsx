@@ -119,7 +119,7 @@ export default function DocsPage({ onBack }: DocsPageProps) {
                 <Card className="glass-card border-l-4 border-l-amber-400">
                     <CardContent className="p-6 space-y-4 text-sm leading-relaxed text-muted-foreground">
                         <p>
-                            By using BackCash, you agree to the following terms:
+                            By using CBack, you agree to the following terms:
                         </p>
 
                         <div className="space-y-4">
