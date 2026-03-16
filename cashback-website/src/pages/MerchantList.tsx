@@ -315,6 +315,7 @@ export default function MerchantList({ cardId, onBack, onMerchantSelect, isAuthe
                             <SelectItem value="cashback-high">High First</SelectItem>
                             <SelectItem value="cashback-low">Low First</SelectItem>
                             <SelectItem value="verified">Verified</SelectItem>
+                            <SelectItem value="newest">Recent</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

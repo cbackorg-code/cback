@@ -145,10 +145,22 @@ export default function DocsPage({ onBack }: DocsPageProps) {
                                     We respect your privacy. Your profile information is visible to other users to build trust, but we do not sell your personal data to third parties.
                                 </p>
                             </div>
+
+                            <div>
+                                <h3 className="font-semibold text-foreground mb-1">4. Data Source & Acknowledgements</h3>
+                                <p>
+                                    The initial cashback data has been taken from this
+                                    <a href="https://docs.google.com/spreadsheets/d/1LEw12SuubMCJ-6u_4PZtRSD8FI1B5uecbeyCvCApQtk/edit?usp=sharing" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-1">
+                                        excel file
+                                    </a>
+                                    available from a post from Techofino to give a better experience for users. I made this website and want to say thanks to Ragveer!
+                                    Please note that all data is used ethically for public informational purposes and community benefit, without any intent to infringe upon data rights or attract data stealing laws.
+                                </p>
+                            </div>
                         </div>
 
                         <div className="mt-6 pt-4 border-t border-border/20 text-xs opacity-70">
-                            Last Updated: February 2026
+                            Last Updated: March 2026
                         </div>
                     </CardContent>
                 </Card>

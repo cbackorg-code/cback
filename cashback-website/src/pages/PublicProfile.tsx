@@ -1,4 +1,4 @@
-import { ArrowLeft, Calendar, Award, Edit, Plus, TrendingUp } from "lucide-react";
+import { ArrowLeft, Calendar, Award, Edit, Plus, TrendingUp, Heart, Star } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import StatCard from "../components/StatCard";
@@ -53,9 +53,12 @@ export default function PublicProfile({ userId, onBack }: PublicProfileProps) {
         );
     }
 
+    const isRagveer = profileData.display_name.toLowerCase().includes('ragveer') || 
+                      profileData.display_name.toLowerCase().includes('techofino');
+
     const stats = {
         joinDate: new Date(profileData.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-        reputation: profileData.reputation_score,
+        reputation: isRagveer ? '∞' : profileData.reputation_score,
         contributions: profileData.stats.total_contributions
     };
 
@@ -103,29 +106,40 @@ export default function PublicProfile({ userId, onBack }: PublicProfileProps) {
             </div>
 
             {/* User Profile Card */}
-            <div className="glass-card rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 relative overflow-hidden">
+            <div className={`glass-card rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 relative overflow-hidden ${isRagveer ? 'border-2 border-primary/40 shadow-lg' : ''}`}>
                 {/* Decorative background gradient */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+                <div className={`absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none ${isRagveer ? 'bg-primary/20' : 'bg-primary/10'}`} />
+                {isRagveer && (
+                    <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
+                )}
 
                 {/* Avatar */}
-                <UserAvatar
-                    user={{
-                        name: profileData.display_name,
-                        avatar_url: profileData.avatar_url,
-                        reputation: stats.reputation
-                    }}
-                    className="h-24 w-24 sm:h-32 sm:w-32 shadow-xl ring-4 text-3xl sm:text-4xl"
-                />
+                <div className="relative">
+                    <UserAvatar
+                        user={{
+                            name: profileData.display_name,
+                            avatar_url: profileData.avatar_url,
+                            reputation: profileData.reputation_score
+                        }}
+                        className={`h-24 w-24 sm:h-32 sm:w-32 shadow-xl text-3xl sm:text-4xl ${isRagveer ? 'ring-4 ring-primary/50 shadow-primary/20' : 'ring-4 ring-border'}`}
+                    />
+                </div>
 
                 {/* User Info */}
                 <div className="text-center sm:text-left space-y-2 py-2 flex-1 relative z-10">
                     <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold">{profileData.display_name}</h2>
-                        {/* No Email Display for Public Profile */}
+                        <h2 className="text-2xl sm:text-3xl font-bold flex flex-col sm:flex-row items-center gap-3 text-foreground">
+                            {profileData.display_name}
+                            {isRagveer && (
+                                <span className="bg-primary/10 text-primary border border-primary/20 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                                    <Award className="h-3.5 w-3.5" /> Data Pioneer
+                                </span>
+                            )}
+                        </h2>
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-4 mt-4 pt-2">
-                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/30 text-secondary-foreground text-sm font-medium border border-secondary/20">
+                        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border ${isRagveer ? 'bg-primary/10 text-primary border-primary/20' : 'bg-secondary/30 text-secondary-foreground border-secondary/20'}`}>
                             <Calendar className="h-4 w-4" />
                             Member since {stats.joinDate}
                         </div>
@@ -135,11 +149,39 @@ export default function PublicProfile({ userId, onBack }: PublicProfileProps) {
                 {/* Reputation Score - Desktop */}
                 <div className="hidden sm:flex flex-col items-end justify-center h-full py-2 z-10">
                     <div className="text-right">
-                        <p className="text-sm text-muted-foreground uppercase tracking-wider font-semibold">Reputation</p>
-                        <p className="text-4xl font-bold gradient-text">{stats.reputation}</p>
+                        <p className={`text-sm uppercase tracking-wider font-semibold ${isRagveer ? 'text-primary' : 'text-muted-foreground'}`}>Reputation</p>
+                        <p className={`text-4xl font-bold ${isRagveer ? 'text-primary' : 'gradient-text'}`}>{stats.reputation}</p>
                     </div>
                 </div>
             </div>
+
+            {/* Special Ragveer Appreciation Section */}
+            {isRagveer && (
+                <div className="bg-primary/5 dark:bg-primary/10 border-y border-primary/20 p-6 sm:p-8 relative overflow-hidden my-8 rounded-2xl shadow-sm">
+                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                        <div className="space-y-3 text-center md:text-left flex-1">
+                            <h3 className="text-2xl font-bold text-primary flex items-center justify-center md:justify-start gap-2">
+                                <Heart className="h-6 w-6 text-primary" />
+                                Support the Creator
+                            </h3>
+                            <p className="text-foreground/80 text-sm sm:text-base leading-relaxed max-w-2xl">
+                                Ragveer (Techofino) generously provided the initial spreadsheet of cashback rates that made CBack possible. 
+                                We are incredibly grateful for his countless hours compiling this data for the community to make our lives easier!
+                            </p>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto shrink-0">
+                            <Button 
+                                variant="default"
+                                className="whitespace-nowrap transition-transform hover:scale-105"
+                                onClick={() => window.open('https://docs.google.com/spreadsheets/d/1LEw12SuubMCJ-6u_4PZtRSD8FI1B5uecbeyCvCApQtk/edit?usp=sharing', '_blank')}
+                            >
+                                <Star className="h-4 w-4 mr-2" />
+                                View Original Data
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Stats Grid */}
             <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
