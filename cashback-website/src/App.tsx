@@ -58,7 +58,7 @@ function App() {
   const [view, setView] = useState<'main' | 'profile' | 'public_profile' | 'docs'>('main');
   const [publicProfileId, setPublicProfileId] = useState<string | null>(null);
 
-  const [user, setUser] = useState<{ name: string; email: string; avatar_url?: string; reputation?: number } | null>(null);
+  const [user, setUser] = useState<{ id: string; name: string; email: string; avatar_url?: string; reputation?: number } | null>(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   // Track demo mode to prevent Supabase from clearing state
@@ -68,6 +68,7 @@ function App() {
     // Helper to sync user data
     const syncUser = async (sessionUser: any) => {
       const basicUser = {
+        id: sessionUser.id,
         name: sessionUser.user_metadata.full_name || sessionUser.user_metadata.name || sessionUser.email?.split('@')[0] || 'User',
         email: sessionUser.email || '',
         avatar_url: sessionUser.user_metadata.avatar_url || sessionUser.user_metadata.picture,
@@ -222,7 +223,7 @@ function App() {
               onOpenLogin={() => setIsLoginOpen(true)}
             />
           ) : (
-            <Home onCardSelect={handleCardSelect} />
+            <Home onCardSelect={handleCardSelect} user={user} onOpenLogin={() => setIsLoginOpen(true)} />
           )}
         </Layout>
         <Toaster />

@@ -27,6 +27,17 @@ class SuggestionStatus(str, Enum):
     accepted = "accepted"
     rejected = "rejected"
 
+class FeedbackType(str, Enum):
+    bug = "bug"
+    feature_request = "feature_request"
+    card_request = "card_request"
+    other = "other"
+
+class FeedbackStatus(str, Enum):
+    pending = "pending"
+    reviewed = "reviewed"
+    resolved = "resolved"
+
 
 # ------------------------------
 # 1. PROFILES (Extends Supabase Auth)
@@ -219,3 +230,27 @@ class RateSuggestionVote(SQLModel, table=True):
     # Relationships
     suggestion: RateSuggestion = Relationship(back_populates="votes")
     user: Profile = Relationship(back_populates="suggestion_votes")
+
+
+# ------------------------------
+# 10. FEEDBACK (Home Page Submissions)
+# ------------------------------
+class Feedback(SQLModel, table=True):
+    __tablename__ = "feedbacks"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: Optional[uuid.UUID] = Field(foreign_key="profiles.id", index=True, default=None)
+    
+    type: FeedbackType = Field(sa_column=sa.Column(sa.Enum(FeedbackType, name="feedback_type", create_type=False), nullable=False))
+    message: str
+    status: FeedbackStatus = Field(
+        default=FeedbackStatus.pending,
+        sa_column=sa.Column(sa.Enum(FeedbackStatus, name="feedback_status", create_type=False), nullable=False, default=FeedbackStatus.pending.value)
+    )
+    
+    created_at: datetime = Field(default_factory=ist_now)
+
+    # Note: If we want to link feedback to user profiles, we would add the relationship:
+    # user: Optional[Profile] = Relationship(back_populates="feedbacks")
+    # And add `feedbacks: List["Feedback"] = Relationship(back_populates="user")` to Profile.
+    # For now, just recording the user_id (if logged in) is sufficient without reverse relation.

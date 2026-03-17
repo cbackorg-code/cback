@@ -10,7 +10,7 @@ interface LayoutProps {
     children: ReactNode;
     onLogoClick?: () => void;
     onProfileClick?: () => void;
-    user: { name: string; email: string; avatar_url?: string; reputation?: number } | null;
+    user: { id?: string; name: string; email: string; avatar_url?: string; reputation?: number } | null;
     onCloseLogin: () => void;
     isLoginOpen: boolean;
     onDocsClick: () => void;
@@ -95,7 +95,7 @@ export default function Layout({
 
             {/* Main Content */}
             <main className="flex-1">
-                <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+                <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-6 pb-2 sm:pt-8 sm:pb-2">
                     {children}
                 </div>
             </main>

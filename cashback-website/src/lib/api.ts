@@ -228,5 +228,18 @@ export const api = {
             throw new Error('Failed to fetch public profile');
         }
         return res.json();
+    },
+
+    submitFeedback: async (feedbackData: { type: string, message: string }) => {
+        const headers = await api.getHeaders();
+        const res = await fetch(`${API_URL}/feedback`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(feedbackData)
+        });
+        if (!res.ok) {
+            throw new Error('Failed to submit feedback');
+        }
+        return res.json();
     }
 };

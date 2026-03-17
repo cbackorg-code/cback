@@ -1,19 +1,24 @@
 import { useState, useEffect } from "react";
-import { CreditCard, TrendingUp, Users, Clock, Loader2 } from "lucide-react";
+import { CreditCard, TrendingUp, Users, Clock, Loader2, MessageSquare } from "lucide-react";
 import StatCard from "../components/StatCard";
 import { api } from "../lib/api";
 import type { Card, DashboardStats } from "../lib/api";
 
 interface CardSelectorProps {
     onCardSelect: (cardId: string) => void;
+    user?: { id?: string; name: string; email: string; avatar_url?: string; reputation?: number } | null;
+    onOpenLogin?: () => void;
 }
 
 import SEO from "../components/SEO";
+import { FeedbackForm } from "../components/FeedbackForm";
+import { Button } from "../components/ui/button";
 
-export default function Home({ onCardSelect }: CardSelectorProps) {
+export default function Home({ onCardSelect, user, onOpenLogin }: CardSelectorProps) {
     const [cards, setCards] = useState<Card[]>([]);
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -158,11 +163,31 @@ export default function Home({ onCardSelect }: CardSelectorProps) {
                 )}
             </div>
 
-            {/* CTA Section */}
-            <div className="text-center space-y-3 pt-4 sm:pt-8">
+            {/* CTA & Feedback Section */}
+            <div className="text-center space-y-4 pt-8 sm:pt-12 pb-0">
                 <p className="text-sm sm:text-base text-muted-foreground px-4">
                     Don't see your card? Help the community by adding merchant data!
                 </p>
+                <div className="flex justify-center">
+                    <Button 
+                        variant="outline" 
+                        className="gap-2 glass-card hover:bg-white/10 transition-colors border-white/20 text-foreground"
+                        onClick={() => {
+                            if (!user) {
+                                onOpenLogin?.();
+                            } else {
+                                setIsFeedbackOpen(true);
+                            }
+                        }}
+                    >
+                        <MessageSquare className="w-4 h-4" />
+                        Share Feedback
+                    </Button>
+                </div>
+                <FeedbackForm 
+                    open={isFeedbackOpen} 
+                    onOpenChange={setIsFeedbackOpen} 
+                />
             </div>
         </div >
     );

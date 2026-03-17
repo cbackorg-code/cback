@@ -55,6 +55,12 @@ app.include_router(votes.router)
 app.include_router(stats.router)
 # app.include_router(merchants.router) # Legacy router removed for V1
 
+from app.routers import feedback
+app.include_router(feedback.router)
+
+from app.routers import admin
+app.include_router(admin.router)
+
 @app.get("/")
 def read_root():
     return {"message": "Cashback Backend API is running"}
