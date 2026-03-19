@@ -11,7 +11,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "../components/ui/select";
-import { toast } from "sonner";
+
 import { showAuthToast } from "../lib/utils";
 import { AddMerchantDialog } from "../components/AddMerchantDialog";
 import { api } from "../lib/api";

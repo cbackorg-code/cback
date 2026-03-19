@@ -6,7 +6,7 @@ import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea"
 import { toast } from "sonner";
 import { VoteControl } from "../components/VoteControl";
-import { cn, showAuthToast } from "../lib/utils";
+import { cn } from "../lib/utils";
 import { api } from "../lib/api";
 import {
     Dialog,
