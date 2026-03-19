@@ -226,7 +226,20 @@ function App() {
             <Home onCardSelect={handleCardSelect} user={user} onOpenLogin={() => setIsLoginOpen(true)} />
           )}
         </Layout>
-        <Toaster />
+        <Toaster
+          toastOptions={{
+            style: {
+              background: 'hsl(var(--muted))',
+              color: 'hsl(var(--foreground))',
+              border: '1px solid hsl(var(--border))',
+            },
+            classNames: {
+              description: '!text-[hsl(var(--muted-foreground))]',
+              actionButton: '!bg-[hsl(var(--primary))] !text-[hsl(var(--primary-foreground))] !px-4 !py-2 !rounded-lg !text-sm !font-medium',
+              cancelButton: '!bg-[hsl(var(--muted))] !text-[hsl(var(--muted-foreground))]',
+            },
+          }}
+        />
       </ThemeProvider>
     </HelmetProvider>
   );

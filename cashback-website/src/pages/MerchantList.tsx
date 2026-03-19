@@ -12,6 +12,7 @@ import {
     SelectValue,
 } from "../components/ui/select";
 import { toast } from "sonner";
+import { showAuthToast } from "../lib/utils";
 import { AddMerchantDialog } from "../components/AddMerchantDialog";
 import { api } from "../lib/api";
 
@@ -27,7 +28,7 @@ import SEO from "../components/SEO";
 
 export default function MerchantList({ cardId, onBack, onMerchantSelect, isAuthenticated, onOpenLogin }: MerchantTableProps) {
     const [searchQuery, setSearchQuery] = useState("");
-    const [sortBy, setSortBy] = useState("merchant");
+    const [sortBy, setSortBy] = useState("newest");
     const [showStats, setShowStats] = useState(false);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
@@ -205,13 +206,11 @@ export default function MerchantList({ cardId, onBack, onMerchantSelect, isAuthe
 
     const handleAddEntry = () => {
         if (!isAuthenticated) {
-            toast.error("Please login to add entries", {
-                description: "Help the community grow by signing in to contribute.",
-                action: {
-                    label: "Sign In",
-                    onClick: onOpenLogin
-                }
-            });
+            showAuthToast(
+                "add entries",
+                "Help the community grow by signing in to contribute.",
+                onOpenLogin
+            );
             onOpenLogin();
             return;
         }
@@ -311,11 +310,11 @@ export default function MerchantList({ cardId, onBack, onMerchantSelect, isAuthe
                             <SelectValue placeholder="Sort" />
                         </SelectTrigger>
                         <SelectContent className="floating-dropdown">
+                            <SelectItem value="newest">Newest</SelectItem>
                             <SelectItem value="merchant">A-Z</SelectItem>
                             <SelectItem value="cashback-high">High First</SelectItem>
                             <SelectItem value="cashback-low">Low First</SelectItem>
                             <SelectItem value="verified">Verified</SelectItem>
-                            <SelectItem value="newest">Recent</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

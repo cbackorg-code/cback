@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft, Clock, MessageSquare, Send, CheckCircle, User, Pencil, ThumbsUp, ThumbsDown, Percent } from "lucide-react";
+import { ArrowLeft, Clock, MessageSquare, Send, CheckCircle, Pencil, ThumbsUp, ThumbsDown, Percent } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea"
 import { toast } from "sonner";
 import { VoteControl } from "../components/VoteControl";
-import { cn } from "../lib/utils";
+import { cn, showAuthToast } from "../lib/utils";
 import { api } from "../lib/api";
 import {
     Dialog,
@@ -163,7 +163,7 @@ export default function MerchantDetails({ merchantId, onBack, isAuthenticated, o
             toast.error("Please login to comment", {
                 description: "You need to be signed in to join the discussion.",
                 action: {
-                    label: "Sign In",
+                    label: "OK",
                     onClick: onOpenLogin
                 }
             });
@@ -338,7 +338,7 @@ export default function MerchantDetails({ merchantId, onBack, isAuthenticated, o
     };
 
     return (
-        <div className="space-y-6 pb-24">
+        <div className="space-y-4 sm:space-y-6 pb-20">
             <SEO
                 title={`${entry.merchant} Cashback - ${entry.cardName}`}
                 description={`Get ${entry.cashbackRate} cashback at ${entry.merchant} with ${entry.cardName}. Verified by the community. MCC Code for ${entry.merchant}.`}
@@ -350,107 +350,93 @@ export default function MerchantDetails({ merchantId, onBack, isAuthenticated, o
                 structuredData={structuredData}
             />
             {/* Header */}
-            <div className="flex items-start gap-4">
+            <div className="flex items-start gap-3">
                 <Button
                     variant="ghost"
                     size="icon"
                     onClick={onBack}
-                    className="hover:bg-foreground/10 h-9 w-9 sm:h-10 sm:w-10 shrink-0 text-foreground mt-1 rounded-full"
+                    className="hover:bg-foreground/10 h-9 w-9 sm:h-10 sm:w-10 shrink-0 text-foreground mt-0.5 rounded-full"
                 >
                     <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
                 <div className="flex-1 min-w-0">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-                        <div className="min-w-0">
-                            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground break-words">{entry.merchant}</h1>
-                            <p className="text-sm text-muted-foreground flex flex-wrap items-center gap-2">
-                                {entry.cardName}
-                                <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
-                                <span className="font-mono text-xs break-all">{entry.statementName}</span>
-                            </p>
-                        </div>
-                    </div>
+                    <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground break-words leading-snug">{entry.statementName || entry.merchant}</h1>
+                    <p className="text-xs sm:text-sm text-muted-foreground flex flex-wrap items-center gap-1.5 mt-0.5">
+                        <span>{entry.merchant}</span>
+                        <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
+                        <span>{entry.cardName}</span>
+                    </p>
                 </div>
             </div>
 
 
             {/* Main Content Stack */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
                 {/* Stats & Info */}
-                <div className="space-y-6">
-                    {/* Key Stats */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        <Card className="glass-card overflow-hidden relative group">
-                            <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                                <span className="text-xs text-muted-foreground uppercase tracking-wider">Cashback</span>
-                                <div className={cn("text-2xl font-bold", style.text)}>{entry.cashbackRate || "0%"}</div>
-
-                                <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-primary hover:text-primary hover:bg-primary/10"
-                                    onClick={() => {
-                                        if (!isAuthenticated) {
-                                            onOpenLogin();
-                                            return;
-                                        }
-                                        if (hasPendingSuggestion) {
-                                            toast.error("Pending Suggestion Exists", {
-                                                description: "You already have a pending suggestion for this card. Please wait for it to be resolved."
-                                            });
-                                            return;
-                                        }
-                                        setIsSuggestionDialogOpen(true);
-                                    }}
-                                >
-                                    <Pencil className="h-3 w-3" />
-                                </Button>
-                            </CardContent>
-                        </Card>
-                        <Card className="glass-card overflow-hidden">
-                            <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                                <span className="text-xs text-muted-foreground uppercase tracking-wider">Status</span>
-                                <div className="flex items-center gap-1.5 text-lg font-medium">
+                <div className="space-y-4">
+                    {/* Key Stats — child chips inside parent card */}
+                    <Card className="glass-card overflow-hidden">
+                        <CardContent className="p-3 sm:p-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {/* Cashback chip */}
+                                <div className="relative group/chip bg-muted/30 rounded-lg px-3 py-2 flex flex-col items-center text-center gap-0.5">
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Cashback</span>
+                                    <span className={cn("font-bold text-lg leading-tight", style.text)}>{entry.cashbackRate || "0%"}</span>
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover/chip:opacity-100 transition-opacity text-primary hover:text-primary hover:bg-primary/10"
+                                        onClick={() => {
+                                            if (!isAuthenticated) { onOpenLogin(); return; }
+                                            if (hasPendingSuggestion) {
+                                                toast.error("Pending Suggestion Exists", {
+                                                    description: "You already have a pending suggestion for this card. Please wait for it to be resolved."
+                                                });
+                                                return;
+                                            }
+                                            setIsSuggestionDialogOpen(true);
+                                        }}
+                                    >
+                                        <Pencil className="h-2.5 w-2.5" />
+                                    </Button>
+                                </div>
+                                {/* Status chip */}
+                                <div className="bg-muted/30 rounded-lg px-3 py-2 flex flex-col items-center text-center gap-0.5">
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Status</span>
                                     {entry.status === 'verified' ? (
-                                        <>
-                                            <CheckCircle className="h-5 w-5 text-emerald-400" />
-                                            <span className="text-emerald-400">Verified</span>
-                                        </>
+                                        <span className="flex items-center gap-1 text-emerald-400 font-semibold text-sm leading-tight">
+                                            <CheckCircle className="h-3.5 w-3.5" /> Verified
+                                        </span>
                                     ) : (
-                                        <span className="text-muted-foreground">Unverified</span>
+                                        <span className="text-muted-foreground font-semibold text-sm leading-tight">Unverified</span>
                                     )}
                                 </div>
-                            </CardContent>
-                        </Card>
-                        <Card className="glass-card overflow-hidden col-span-2 sm:col-span-1">
-                            <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                                <span className="text-xs text-muted-foreground uppercase tracking-wider">Contributor</span>
-                                <div
-                                    className={cn(
-                                        "flex items-center gap-2 text-foreground font-medium truncate max-w-full",
-                                        entry.contributorId && "cursor-pointer hover:underline hover:text-primary transition-colors"
-                                    )}
-                                    onClick={() => entry.contributorId && onUserClick?.(entry.contributorId)}
-                                >
-                                    <User className="h-4 w-4 text-muted-foreground" />
-                                    {entry.contributor || "Anonymous"}
+                                {/* Contributor chip */}
+                                <div className="bg-muted/30 rounded-lg px-3 py-2 flex flex-col items-center text-center gap-0.5">
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Contributor</span>
+                                    <span
+                                        className={cn(
+                                            "font-semibold text-sm text-foreground truncate max-w-full leading-tight",
+                                            entry.contributorId && "cursor-pointer hover:underline hover:text-primary transition-colors"
+                                        )}
+                                        onClick={() => entry.contributorId && onUserClick?.(entry.contributorId)}
+                                    >
+                                        {entry.contributor || "Anonymous"}
+                                    </span>
                                 </div>
-                            </CardContent>
-                        </Card>
-                        <Card className="glass-card overflow-hidden col-span-2 sm:col-span-1">
-                            <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                                <span className="text-xs text-muted-foreground uppercase tracking-wider">MCC</span>
-                                <div className="text-lg font-medium">
-                                    {entry.mcc || <span className="text-muted-foreground text-sm">--</span>}
+                                {/* MCC chip */}
+                                <div className="bg-muted/30 rounded-lg px-3 py-2 flex flex-col items-center text-center gap-0.5">
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">MCC</span>
+                                    <span className="font-mono font-semibold text-sm text-foreground leading-tight">{entry.mcc || "—"}</span>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    </div>
+                            </div>
+                        </CardContent>
+                    </Card>
 
                     {/* Voting Controls */}
                     <Card className="glass-card">
                         <CardContent className="p-4 flex items-center justify-between">
-                            <span className="font-medium">Is this cashback rate accurate?</span>
+                            <span className="text-sm font-medium">Is this cashback rate accurate?</span>
                             <VoteControl
                                 initialUpvotes={entry.upvoteCount || 0}
                                 initialDownvotes={entry.downvoteCount || 0}
@@ -458,7 +444,6 @@ export default function MerchantDetails({ merchantId, onBack, isAuthenticated, o
                                 isAuthenticated={isAuthenticated}
                                 onOpenLogin={onOpenLogin}
                                 onVote={handleVote}
-                                className="scale-110"
                             />
                         </CardContent>
                     </Card>
@@ -516,9 +501,9 @@ export default function MerchantDetails({ merchantId, onBack, isAuthenticated, o
                     {/* Original Note */}
                     {entry.comments && (
                         <Card className="glass-card">
-                            <CardContent className="p-6">
-                                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                                    <MessageSquare className="h-5 w-5 text-primary" />
+                            <CardContent className="p-4">
+                                <h3 className="text-base font-semibold mb-2 flex items-center gap-2">
+                                    <MessageSquare className="h-4 w-4 text-primary" />
                                     Original Note
                                 </h3>
                                 <p className="text-foreground/90 leading-relaxed">{entry.comments}</p>
@@ -528,7 +513,7 @@ export default function MerchantDetails({ merchantId, onBack, isAuthenticated, o
                 </div>
 
                 {/* Comments System */}
-                <Card className="glass-card flex flex-col max-h-[600px]">
+                <Card className="glass-card flex flex-col max-h-[400px]">
                     <CardContent className="p-0 flex flex-col h-full">
                         <div className="p-4 border-b border-border/20">
                             <h3 className="font-semibold flex items-center gap-2">
@@ -537,7 +522,7 @@ export default function MerchantDetails({ merchantId, onBack, isAuthenticated, o
                             </h3>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px]">
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[150px]">
                             {isLoadingComments ? (
                                 <div className="h-full flex items-center justify-center">
                                     <p className="text-muted-foreground text-sm">Loading comments...</p>

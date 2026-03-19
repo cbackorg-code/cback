@@ -38,7 +38,7 @@ export function ThemeToggle() {
             </Button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-36 floating-dropdown overflow-hidden z-50">
+                <div className="absolute right-0 mt-2 w-36 floating-dropdown shadow-lg overflow-hidden z-50" style={{ background: 'hsl(var(--card))' }}>
                     <button
                         onClick={() => { setTheme("light"); setIsOpen(false); }}
                         className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-foreground/10 transition-colors ${theme === "light" ? "text-primary bg-primary/5" : "text-foreground"

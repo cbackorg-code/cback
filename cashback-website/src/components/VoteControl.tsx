@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { ArrowBigUp, ArrowBigDown } from "lucide-react";
 import { Button } from "./ui/button";
-import { cn } from "../lib/utils";
-import { toast } from "sonner";
+import { cn, showAuthToast } from "../lib/utils";
 
 interface VoteControlProps {
     initialUpvotes: number;
@@ -37,13 +36,11 @@ export function VoteControl({
 
     const handleVote = (direction: 1 | -1) => {
         if (!isAuthenticated) {
-            toast.error("Please login to vote", {
-                description: "You need to be signed in to rate merchants.",
-                action: {
-                    label: "Sign In",
-                    onClick: onOpenLogin
-                }
-            });
+            showAuthToast(
+                "vote",
+                "You need to be signed in to rate merchants.",
+                onOpenLogin
+            );
             onOpenLogin();
             return;
         }
